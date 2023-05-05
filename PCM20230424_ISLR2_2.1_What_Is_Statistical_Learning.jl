@@ -5,7 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ f47f7410-e2a8-11ed-20b1-87560a4c3ab4
-using CSV, DataFrames, Plots, GLM, LsqFit, Statistics, HypothesisTests, StatsPlots
+using CSV, DataFrames , Plots, GLM, LsqFit, Statistics, HypothesisTests, StatsPlots
 
 # ╔═╡ faef2569-8983-4704-9e1a-7080fb16dd06
 md"
@@ -481,7 +481,7 @@ let
 	gs  = cat(lx_ly, lx_hy, hx_ly, hx_hy; dims=1)
     gzs = [gsi[1] for gsi in gs] 
 	ggs = [gsi[2] for gsi in gs]
-	StatsPlots.groupedhist(gzs, group = ggs, title="Income2 Data: Split at Inflection Points of Rate k", xlabel="Income", bins=10)
+	groupedhist(gzs, group = ggs, title="Income2 Data: Split at Inflection Points of Rate k", xlabel="Income", bins=10)
 	#-------------------------------------------------------------------------------
 end # let
 
@@ -517,7 +517,7 @@ Despite the fact that the frequencies of the two extreme groups $lxly$ and $hxhy
 md"
 ---
 ##### 3.6 ISLR2, Fig.2.3 $Income \rightarrow Education \times Seniority$
-###### 3.6.1 3D Plots
+###### 3.6.1 3D Plot
 "
 
 # ╔═╡ 976f54be-4c0f-409b-bf8c-e37d494b472c
@@ -536,6 +536,12 @@ let
 	annotate!(30.4, 15, 100, "r^2(Edu, Sen)=$rXYsQ", 10)
 	annotate!(32.6, 15, 95, "p_corr=0.30", 10)
 end # let
+
+# ╔═╡ 2ae93ea8-4106-4ff5-b69d-a5d1847e32aa
+md"
+---
+###### 3.6.2 Multiple Linear Regression $Income \rightarrow Education \times Seniority$ with 3 Parameters
+"
 
 # ╔═╡ 3e40aac3-88b2-4b8c-a003-03e7317d107c
 let
@@ -566,6 +572,49 @@ let
 	#-------------------------------------------------------------------------------
 end # let
 
+# ╔═╡ 6177f953-55a0-43cb-8d37-4990461b946b
+md"
+---
+###### 3.6.3 Multiple *Non*Linear Regression $Income \rightarrow (Education \cdot Seniority)$ with 2 Parameters
+
+Concerning $R^2$ this is *no* improvement in comparison against the multiple *linear* model (above). But because we have only 2 parameters, we prefer *this* model.
+"
+
+# ╔═╡ 98bbe5b4-3811-405f-9965-48885038cac5
+let
+	#-------------------------------------------------------------------------------
+	xs  = income2DataFrame.Education
+	ys  = income2DataFrame.Seniority 
+	zs  = income2DataFrame.Income
+	#-------------------------------------------------------------------------------
+	ols_lin = lm(@formula(Income ~ 1 + Education*Seniority), income2DataFrame)
+	yhat = predict(ols_lin)
+	#-------------------------------------------------------------------------------
+	e    = residuals(ols_lin)
+	sse  = round(e'e, digits=2)
+	#-------------------------------------------------------------------------------
+	rXYhat   = round(cor(xs, yhat), digits=2)
+	rXYhatsQ = round(rXYhat^2, digits=2)
+	#-------------------------------------------------------------------------------
+	Plots.plot(title="3D-Plot of 'Income2'-Data (cf. ISLR2, Fig.2.3)", legend=:none)
+	#-------------------------------------------------------------------------------
+	Plots.surface!(xs, ys, yhat, c=:viridis, legend=:none, xlabel="Education", ylabel="Seniority", zlabel="Income", nx=200, ny=200, display_option=Plots.GR.OPTION_SHADED_MESH, grid=(10))
+	#-------------------------------------------------------------------------------
+	Plots.plot!(xs, ys, zs, seriestype=:scatter, xlabel="Education", ylabel="Seniority", zlabel="Income", grid=(10))
+	#-------------------------------------------------------------------------------
+	Plots.plot!(map((x, y, z, yh) -> ([x, x], [y, y], [z, yh]), xs, ys, zs, yhat), label="")
+	#-------------------------------------------------------------------------------
+	annotate!(31, 20, 110, "multiple R=$rXYhat", 10)
+	annotate!(30.4, 15, 100, "R^2=$rXYhatsQ", 10)
+	#-------------------------------------------------------------------------------
+end # let
+
+# ╔═╡ 60bbd574-5246-4145-819b-f149eedcdcdc
+md"
+---
+###### 3.6.3 NonLinear Surface $Income \rightarrow Education \times Seniority$
+"
+
 # ╔═╡ 8082f864-ece5-424d-ac92-93ca8f344ced
 let
 	xs  = income2DataFrame.Education
@@ -589,7 +638,7 @@ end # let
 md"
 ---
 
-###### 3.6.2 Nonlinear Bivariate Model using the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
+###### 3.6.4 Nonlinear Bivariate Model using the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
 
 The *marginal* (*univariate*) model functions are:
 
@@ -752,7 +801,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "af24b9b817b6e0561645c2cd2792597d167ba2d1"
+project_hash = "2c868093c0b7ac923e4295a34220d5c2222340a1"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -843,9 +892,9 @@ version = "0.1.7"
 
 [[deps.Clustering]]
 deps = ["Distances", "LinearAlgebra", "NearestNeighbors", "Printf", "Random", "SparseArrays", "Statistics", "StatsBase"]
-git-tree-sha1 = "a3213fa9d35edf589d0c6303f95850f7641fe2dc"
+git-tree-sha1 = "a6e6ce44a1e0a781772fc795fb7343b1925e9898"
 uuid = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
-version = "0.15.1"
+version = "0.15.2"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -986,9 +1035,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[deps.Distributions]]
 deps = ["ChainRulesCore", "DensityInterface", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SparseArrays", "SpecialFunctions", "Statistics", "StatsBase", "StatsFuns", "Test"]
-git-tree-sha1 = "180538ef4e3aa02b01413055a7a9e8b6047663e1"
+git-tree-sha1 = "c2614fa3aafe03d1a44b8e16508d9be718b8095a"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.88"
+version = "0.25.89"
 
 [[deps.DocStringExtensions]]
 deps = ["LibGit2"]
@@ -1267,9 +1316,9 @@ version = "1.3.0"
 
 [[deps.Latexify]]
 deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Printf", "Requires"]
-git-tree-sha1 = "8c57307b5d9bb3be1ff2da469063628631d4d51e"
+git-tree-sha1 = "099e356f267354f46ba65087981a77da23a279b7"
 uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-version = "0.15.21"
+version = "0.16.0"
 
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
@@ -2147,7 +2196,11 @@ version = "1.4.1+0"
 # ╟─4ea401b0-4604-4ab1-a5c4-cbdf4dc3195e
 # ╟─19579a86-97ef-4d18-9a71-89fc350571a8
 # ╟─976f54be-4c0f-409b-bf8c-e37d494b472c
+# ╟─2ae93ea8-4106-4ff5-b69d-a5d1847e32aa
 # ╟─3e40aac3-88b2-4b8c-a003-03e7317d107c
+# ╟─6177f953-55a0-43cb-8d37-4990461b946b
+# ╟─98bbe5b4-3811-405f-9965-48885038cac5
+# ╟─60bbd574-5246-4145-819b-f149eedcdcdc
 # ╟─8082f864-ece5-424d-ac92-93ca8f344ced
 # ╟─9bc9fe72-7dee-495e-9e0a-cc86ae653092
 # ╟─e354fade-e1d8-4bd2-8e47-ec4046354c55
