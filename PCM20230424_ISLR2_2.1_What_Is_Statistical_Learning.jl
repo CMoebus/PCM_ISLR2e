@@ -4,15 +4,15 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ f47f7410-e2a8-11ed-20b1-87560a4c3ab4
-using CSV, DataFrames , Plots, GLM, LsqFit, Statistics, HypothesisTests, StatsPlots
+# ╔═╡ 849dbc25-8dd1-416b-b706-672e826eec6a
+using CSV, Plots, GLM, LsqFit, Statistics,StatsPlots,HypothesisTests,Symbolics
 
 # ╔═╡ faef2569-8983-4704-9e1a-7080fb16dd06
 md"
 =====================================================================================
 #### ISLR2_2.1 What Is Statistical Learning ?
 ##### file: PCM20230424\_ISLR2\_2.1\_What\_Is\_Statistical\_Learning.jl
-##### Julia/Pluto (1.8.5/0.19.14) by PCM *** 2023/05/05 ***
+##### Julia/Pluto (1.8.5/0.19.14) by PCM *** 2023/05/08 ***
 =====================================================================================
 "
 
@@ -132,22 +132,27 @@ md"
 ---
 ###### 2.2.3 Nonlinear Regression Model using the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
 
-$f(X) = L + \frac{U-L}{1+e^{-k\left(X - x_{k_{max}}\right)}}$
+$f(x) = L + (U-L) \cdot \frac{1}{1+e^{-k\left(x - x_{k_{max}}\right)}}$
 
 where:
-- **$k$** = Growth rate *k* of $X$
+- **$k_{max}$** = $max(k)$ = max. growth rate *k* of $X$
 - **$U$** = Upper (right) asymptote of $X$
 - **$L$** = Lower (left) asymptote of $X$
-- **$x_{k_{max}}$** = $\underset{X}{\operatorname{argmax}\;k} \;\; \text{(= }x\text{ is the inflection point of rate } k)$ 
+- **$x_{k_{max}}$** = $\underset{X}{\operatorname{argmax}\;k} \;\; \text{(= }x\text{ is the inflection point of } k)$ 
+
+The above function $f(X)$ is a solution of *differential equation* describing a [*(logistic) growth process*](https://en.wikipedia.org/wiki/Logistic_function). We derive the differential equation for the simple logistic function $(0 < f_{simple}(X) < 1)$ in the appendix:
+
+$f_{simple}(x) = \frac{1}{1+e^{-x}} = \frac{e^x}{e^x+1}.$ 
+
 "
 
 # ╔═╡ 92ea0bb5-d318-4758-83c9-ac5960918e12
 let
-	#------------------------------------------------------------------------------
+	#--------------------------------------------------------------------------------
 	xdata = income1DataFrame.Education
 	ydata = income1DataFrame.Income
-	#------------------------------------------------------------------------------
-	myModel(x, p) = p[1] .+ (p[2]-p[1])./((1 .+ exp.(-p[3] .*(x .- p[4]))))
+	#--------------------------------------------------------------------------------
+	myModel(x, p) = p[1] .+ (p[2]-p[1]) .* (1 ./ ((1 .+ exp.(-p[3] .* (x .- p[4])))))
 	parms0 = [18.0, 78.0, 0.5, 16.0]                    # initial estimates of parms
 	myModel(xdata, parms0)
 	fit = curve_fit(myModel, xdata, ydata, parms0)
@@ -156,22 +161,36 @@ let
 	parms_hat = coef(fit)
 	L  = round(parms_hat[1], digits=2)                    # greatest Lower bound (gLb)
 	U  = round(parms_hat[2], digits=2)                    # least Upper bound (lUb)
-	k  = round(parms_hat[3], digits=2)                    # growth rate k
+	k  = round(parms_hat[3], digits=2)                    # max. growth rate k
 	x_k_max = round(parms_hat[4], digits=2)               # point x of k_max
 	yhat = myModel(xdata, parms_hat)
-	#------------------------------------------------------------------------------
+	#--------------------------------------------------------------------------------
 	Plots.plot(title="Income -> Education (ISLR2e, Fig. 2.2 - right)", xlims=(9,23), ylims=(5,95))
 	Plots.plot!(xdata, ydata, seriestype=:scatter, xlabel="income1DataFrame.Education", ylabel="income1DataFrame.Income", label="(x,y)")
 	Plots.plot!(xdata, yhat, seriestype=:line, label="(x,yhat)", w=2)
 	Plots.plot!(map(((x, y, yh) -> ([x, x],[y, yh])), xdata, ydata, yhat), label="")
-	#------------------------------------------------------------------------------
+	#--------------------------------------------------------------------------------
 	annotate!((21.4,46,"x_k_max = $x_k_max", 10))
-	annotate!((20.8,40,"k=$k (= growth rate)", 10))
+	annotate!((20.3,40,"k=$k (= max. growth rate)", 10))
 	annotate!((19.4,34,"U=$U (= Upper (right) asymptote)", 10))
 	annotate!((19.6,28,"L=$L (= Lower (left) asymptote)", 10))
 	annotate!((19.2,22,"SSE = $sse ( = error sum of squares)", 10))
-	#------------------------------------------------------------------------------
+	#--------------------------------------------------------------------------------
 end # let
+
+# ╔═╡ e5a0b52d-f482-43fa-9efc-84ecd0711794
+md"""
+
+The derivative $f'(x)$ is the description of the logistic growth process and is called [*logistic differential equation*](https://en.wikipedia.org/wiki/Logistic_function) with boundary condition $f(0)= \frac{1}{2}$.
+
+
+This can be simplified to the product of two terms:
+
+
+$$f'(x) = \frac{e^x}{(e^x+1)^2} = \frac{e^x}{(e^x+1)(e^x+1)} = \frac{e^x}{(e^x+1)} \cdot \frac{1}{(e^x+1)} = f(x)(1-f(x)).$$
+
+
+"""
 
 # ╔═╡ 5adf8b34-2d41-4b15-8c13-0cbf84ed0cce
 md"
@@ -229,21 +248,34 @@ md"
 ---
 ###### 3.2.3 Nonlinear Regression Models using the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
 
-$f(X) = L + \frac{U-L}{1+e^{-k\left(X - x_{k_{max}}\right)}}$
+$f(x) = L + (U-L) \cdot \frac{1}{1+e^{-k\left(x - x_{k_{max}}\right)}}$
 
 where:
-- **$k$** = Growth rate *k* of $X$
+- **$k_{max}$** = $max(k)$ = max. growth rate *k* of $X$
 - **$U$** = Upper (right) asymptote of $X$
 - **$L$** = Lower (left) asymptote of $X$
 - **$x_{k_{max}}$** = $\underset{X}{\operatorname{argmax}\;k} \;\; \text{(= }x\text{ is the inflection point of rate } k)$ 
+
+$\;$
+
+The above function $f(X)$ is a solution of *differential equation* describing a [*(logistic) growth process*](https://en.wikipedia.org/wiki/Logistic_function). We derive the differential equation for the *simple* logistic function $(0 < f_{simple}(x) < 1)$ in the appendix:
+
+$f_{simple}(x) = \frac{1}{1+e^{-x}} = \frac{e^x}{e^x+1}.$ 
+
+$\;$
+
+$\;$
+
+
+
 "
 
 # ╔═╡ 09af8231-726f-4439-b123-a14170b5170e
 let
 	xdata = income2DataFrame.Education
 	ydata = income2DataFrame.Income
-	#------------------------------------------------------------------------------
-	myModel(x, p) = p[1] .+ (p[2] .-p[1]) ./((1 .+ exp.(-p[3] .*(x .- p[4]))))
+	#--------------------------------------------------------------------------------
+	myModel(x, p) = p[1] .+ (p[2]-p[1]) .* (1 ./ ((1 .+ exp.(-p[3] .* (x .- p[4])))))
 	parms0 = [28.0, 88.0, 0.9, 16.0]                    # initial estimates of parms
 	myModel(xdata, parms0)
 	fit = curve_fit(myModel, xdata, ydata, parms0)
@@ -252,21 +284,21 @@ let
 	parms_hat = coef(fit)
 	L  = round(parms_hat[1], digits=2)                    # greatest Lower bound (gLb)
 	U  = round(parms_hat[2], digits=2)                    # least Upper bound (lUb)
-	k  = round(parms_hat[3], digits=2)                    # growth rate k
+	k  = round(parms_hat[3], digits=2)                    # max. growth rate k
 	x_k_max = round(parms_hat[4], digits=2)               # point x of k_max
 	yhat = myModel(xdata, parms_hat)
-	#------------------------------------------------------------------------------
+	#--------------------------------------------------------------------------------
 	Plots.plot(title="Logistic OLS: Income -> Education (ISLR2e, cf.Fig.2.3)", xlims=(9,22), ylims=(5,120))
 	Plots.plot!(xdata, ydata, seriestype=:scatter, label="(x,y)", xlabel="income2DataFrame.Education", ylabel="income2DataFrame.Income")
 	Plots.plot!(xdata, yhat, seriestype=:line, label="(x,yhat)", w=2)
 	Plots.plot!(map(((x, y, yh) -> ([x, x],[y, yh])), xdata, ydata, yhat), label="")
-	#------------------------------------------------------------------------------
+	#--------------------------------------------------------------------------------
 	annotate!((20.55,46,"x_k_max = $x_k_max", 10))
-	annotate!((20,40,"k=$k (= growth rate)", 10))
+	annotate!((19.5,40,"k=$k (= max. growth rate)", 10))
 	annotate!((18.7,34,"U=$U (= Upper (right) asymptote)", 10))
 	annotate!((19.0,28,"L=$L (= Lower (left) asymptote)", 10))
 	annotate!((18.4,22,"SSE = $sse ( = error sum of squares)", 10))
-	#------------------------------------------------------------------------------
+	#--------------------------------------------------------------------------------
 end # let
 
 # ╔═╡ df58736c-ebd1-4020-915c-b32291985f3f
@@ -315,13 +347,23 @@ md"
 ---
 ###### 3.3.3 Nonlinear Regression Model using the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
 
-$f(X) = L + \frac{U-L}{1+e^{-k\left(X - x_{k_{max}}\right)}}$
+$f(x) = L + \frac{U-L}{1+e^{-k\left(x - x_{k_{max}}\right)}}$
 
 where:
-- **$k$** = Growth rate *k* of $X$
+- **$k_{max}$** = $max(k)$ = max. growth rate *k* of $X$
 - **$U$** = Upper (right) asymptote of $X$
 - **$L$** = Lower (left) asymptote of $X$
 - **$x_{k_{max}}$** = $\underset{X}{\operatorname{argmax}\;k} \;\; \text{(= }x\text{ is the inflection point of rate } k)$ 
+
+$\;$
+
+The above function $f(x)$ is a solution of *differential equation* describing a [*(logistic) growth process*](https://en.wikipedia.org/wiki/Logistic_function). We derive the differential equation for the *simple* logistic function $f_{simple}(x)$ in the appendix:
+
+$f_{simple}(x) = \frac{1}{1+e^{-x}} = \frac{e^x}{e^x+1}.$ 
+
+$\;$
+
+$\;$
 "
 
 # ╔═╡ f3025a7a-0256-46c7-b296-4cc3a36c5372
@@ -338,7 +380,7 @@ let
 	parms_hat = coef(fit)
 	L  = round(parms_hat[1], digits=2)                    # greatest Lower bound (gLb)
 	U  = round(parms_hat[2], digits=2)                    # least Upper bound (lUb)
-	k  = round(parms_hat[3], digits=2)                    # growth rate k
+	k  = round(parms_hat[3], digits=2)                    # max. growth rate k
 	x_k_max = round(parms_hat[4], digits=2)               # point x of k_max
 	yhat = myModel(xdata, parms_hat)
 	#------------------------------------------------------------------------------
@@ -348,7 +390,7 @@ let
 	Plots.plot!(map(((x, y, yh) -> ([x, x],[y, yh])), xdata, ydata, yhat), label="")
 	#------------------------------------------------------------------------------
 	annotate!((181.0,36,"x_k_max = $x_k_max", 10))
-	annotate!((173,30,"k=$k (= growth rate)", 10))
+	annotate!((166,30,"k=$k (= max. growth rate)", 10))
 	annotate!((152.7,24,"U=$U (= Upper (right) asymptote)", 10))
 	annotate!((155.0,18,"L=$L (= Lower (left) asymptote)", 10))
 	annotate!((146.4,12,"SSE = $sse ( = error sum of squares)", 10))
@@ -522,25 +564,27 @@ md"
 
 # ╔═╡ 976f54be-4c0f-409b-bf8c-e37d494b472c
 let
-	Plots.plot(title="3D-Plot of 'Income2'-Data (cf. ISLR2, Fig.2.3)", legend=:none)
+	#--------------------------------------------------------------------------------
+	Plots.plot(title="3D-Plot of 'Income2'-Data (cf. ISLR2, Fig.2.3)", legend=:none, windowsize= (600*2.0, 400*2.0))
 	xs  = income2DataFrame.Education
 	ys  = income2DataFrame.Seniority 
 	zs  = income2DataFrame.Income
-	#----------------------------------------------------------------
+	#--------------------------------------------------------------------------------
 	rXY   = round(cor(xs, ys), digits=2)
 	rXYsQ = round(rXY^2, digits=2)
-	#----------------------------------------------------------------
-	Plots.plot!(xs, ys, zs, seriestype=:scatter, xlabel="Education", ylabel="Seniority", zlabel="Income", grid=(10))
-	#----------------------------------------------------------------
-	annotate!(31, 20, 110, "r(Edu, Sen)=$rXY", 10)
-	annotate!(30.4, 15, 100, "r^2(Edu, Sen)=$rXYsQ", 10)
-	annotate!(32.6, 15, 95, "p_corr=0.30", 10)
+	#--------------------------------------------------------------------------------
+	Plots.plot!(xs, ys, zs, seriestype=:scatter, markersize=8, xlabel="Education", ylabel="Seniority", zlabel="Income", grid=(10))
+	#--------------------------------------------------------------------------------
+	annotate!(31.8, 20, 110, "r(Edu, Sen)=$rXY", 15)
+	annotate!(31.4, 15, 100, "r^2(Edu, Sen)=$rXYsQ", 15)
+	annotate!(32.9, 15, 95, "p_corr=0.30", 15)
+	#--------------------------------------------------------------------------------
 end # let
 
 # ╔═╡ 2ae93ea8-4106-4ff5-b69d-a5d1847e32aa
 md"
 ---
-###### 3.6.2 Multiple Linear Regression $Income \rightarrow Education \times Seniority$ with 3 Parameters
+###### 3.6.2 *Multiple* Linear Regression $Income \rightarrow Education \times Seniority$ with 2 Predictors
 "
 
 # ╔═╡ 3e40aac3-88b2-4b8c-a003-03e7317d107c
@@ -559,23 +603,23 @@ let
 	rXYhat   = round(cor(xs, yhat), digits=2)
 	rXYhatsQ = round(rXYhat^2, digits=2)
 	#-------------------------------------------------------------------------------
-	Plots.plot(title="3D-Plot of 'Income2'-Data (cf. ISLR2, Fig.2.3)", legend=:none)
+	Plots.plot(title="3D-Plot of 'Income2'-Data (cf. ISLR2, Fig.2.3)", legend=:none, windowsize= (600*2.0, 400*2.0))
 	#-------------------------------------------------------------------------------
 	Plots.surface!(xs, ys, yhat, c=:viridis, legend=:none, xlabel="Education", ylabel="Seniority", zlabel="Income", nx=200, ny=200, display_option=Plots.GR.OPTION_SHADED_MESH, grid=(10))
 	#-------------------------------------------------------------------------------
-	Plots.plot!(xs, ys, zs, seriestype=:scatter, xlabel="Education", ylabel="Seniority", zlabel="Income", grid=(10))
+	Plots.plot!(xs, ys, zs, seriestype=:scatter, markersize=8, xlabel="Education", ylabel="Seniority", zlabel="Income", grid=(10))
 	#-------------------------------------------------------------------------------
-	Plots.plot!(map((x, y, z, yh) -> ([x, x], [y, y], [z, yh]), xs, ys, zs, yhat), label="")
+	Plots.plot!(map((x, y, z, yh) -> ([x, x], [y, y], [z, yh]), xs, ys, zs, yhat), label="", linewidth = 4)
 	#-------------------------------------------------------------------------------
-	annotate!(31, 20, 110, "multiple R=$rXYhat", 10)
-	annotate!(30.4, 15, 100, "R^2=$rXYhatsQ", 10)
+	annotate!(31, 20, 110, "multiple R=$rXYhat", 15)
+	annotate!(32.3, 17, 105, "R^2=$rXYhatsQ", 15)
 	#-------------------------------------------------------------------------------
 end # let
 
 # ╔═╡ 6177f953-55a0-43cb-8d37-4990461b946b
 md"
 ---
-###### 3.6.3 Multiple *Non*Linear Regression $Income \rightarrow (Education \cdot Seniority)$ with 2 Parameters
+###### 3.6.3 *Simple* Linear Regression $Income \rightarrow (Education \cdot Seniority)$ with 1 Predictor
 
 Concerning $R^2$ this is *no* improvement in comparison against the multiple *linear* model (above). But because we have only 2 parameters, we prefer *this* model.
 "
@@ -596,23 +640,23 @@ let
 	rXYhat   = round(cor(xs, yhat), digits=2)
 	rXYhatsQ = round(rXYhat^2, digits=2)
 	#-------------------------------------------------------------------------------
-	Plots.plot(title="3D-Plot of 'Income2'-Data (cf. ISLR2, Fig.2.3)", legend=:none)
+	Plots.plot(title="3D-Plot of 'Income2'-Data (cf. ISLR2, Fig.2.3)", legend=:none, windowsize= (600*2.0, 400*2.0))
 	#-------------------------------------------------------------------------------
 	Plots.surface!(xs, ys, yhat, c=:viridis, legend=:none, xlabel="Education", ylabel="Seniority", zlabel="Income", nx=200, ny=200, display_option=Plots.GR.OPTION_SHADED_MESH, grid=(10))
 	#-------------------------------------------------------------------------------
-	Plots.plot!(xs, ys, zs, seriestype=:scatter, xlabel="Education", ylabel="Seniority", zlabel="Income", grid=(10))
+	Plots.plot!(xs, ys, zs, seriestype=:scatter, markersize=8, xlabel="Education", ylabel="Seniority", zlabel="Income", grid=(10))
 	#-------------------------------------------------------------------------------
-	Plots.plot!(map((x, y, z, yh) -> ([x, x], [y, y], [z, yh]), xs, ys, zs, yhat), label="")
+	Plots.plot!(map((x, y, z, yh) -> ([x, x], [y, y], [z, yh]), xs, ys, zs, yhat), label="", linewidth = 4)
 	#-------------------------------------------------------------------------------
-	annotate!(31, 20, 110, "multiple R=$rXYhat", 10)
-	annotate!(30.4, 15, 100, "R^2=$rXYhatsQ", 10)
+	annotate!(31, 20, 110, "multiple R=$rXYhat", 15)
+	annotate!(32.3, 17, 105, "R^2=$rXYhatsQ", 15)
 	#-------------------------------------------------------------------------------
 end # let
 
 # ╔═╡ 60bbd574-5246-4145-819b-f149eedcdcdc
 md"
 ---
-###### 3.6.3 NonLinear Surface $Income \rightarrow Education \times Seniority$
+###### 3.6.4 NonLinear Surface $Income \rightarrow Education \times Seniority$
 "
 
 # ╔═╡ 8082f864-ece5-424d-ac92-93ca8f344ced
@@ -624,13 +668,13 @@ let
 	ols_lin = lm(@formula(Income ~ 1 + Education + Seniority), income2DataFrame)
 	yhat = predict(ols_lin)
 	#-------------------------------------------------------------------------------
-	Plots.plot(title="3D-Plot of 'Income2'-Data (cf. ISLR2, Fig.2.3)", legend=:none)
+	Plots.plot(title="3D-Plot of 'Income2'-Data (cf. ISLR2, Fig.2.3)", legend=:none, windowsize= (600*2.0, 400*2.0))
 	#----------------------------------------------------------------
 	Plots.surface!(xs, ys, zs, c=:viridis, legend=:none, xlabel="Education", ylabel="Seniority", zlabel="Income", nx=200, ny=200, display_option=Plots.GR.OPTION_SHADED_MESH, grid=(10))
 	#-------------------------------------------------------------------------------
-	Plots.plot!(xs, ys, zs, seriestype=:scatter, xlabel="Education", ylabel="Seniority", zlabel="Income", grid=(10))
+	Plots.plot!(xs, ys, zs, seriestype=:scatter, markersize=8, xlabel="Education", ylabel="Seniority", zlabel="Income", grid=(10))
 	#-------------------------------------------------------------------------------
-	Plots.plot!(map((x, y, z, yh) -> ([x, x], [y, y], [z, yh]), xs, ys, zs, yhat), label="")
+	Plots.plot!(map((x, y, z, yh) -> ([x, x], [y, y], [z, yh]), xs, ys, zs, yhat), label="", linewidth = 4)
 	#-------------------------------------------------------------------------------
 end # let
 
@@ -638,7 +682,7 @@ end # let
 md"
 ---
 
-###### 3.6.4 Nonlinear Bivariate Model using the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
+###### 3.6.5 Nonlinear Bivariate Model using the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
 
 The *marginal* (*univariate*) model functions are:
 
@@ -649,10 +693,11 @@ and
 $f(Y) = L_Y + \frac{U_Y-L_Y}{1+e^{-k_Y\left(Y - y_{k_{Y_{max}}}\right)}}.$
 
 where:
-- **$k$** = Growth rate *k* of $X$ and $Y$
+- **$k_{x_{max}}$** = $max(k_x)$ = max. growth rate $k_x$ of $X$
+- **$k_{y_{max}}$** = $max(k_y)$ = max. growth rate $k_y$ of $Y$
 - **$U$** = Upper (right) asymptote of $X$ and $Y$
 - **$L$** = Lower (left) asymptote of $X$ and $Y$
-- **$x_{k_{max}},y_{k_{max}}$** = $\underset{X,Y}{\operatorname{argmax}\;k} \;\; \text{(= }x \text{ and } y\text{ are the inflection points of rate } k$ of $X$ and $Y)$  
+- **$x_{k_{max}},y_{k_{max}}$** = $\underset{X,Y}{\operatorname{argmax}\;k} \;\; \text{(= }x \text{ and } y\text{ are the inflection points of rates } k$ of $X$ and $Y)$  
 
 The *bivariate* model function is: 
 
@@ -750,12 +795,244 @@ let
 	#--------------------------------------------------------------------------
 end # let
 
+# ╔═╡ 2ad1fc50-3505-4a58-a248-c9453df6cc01
+md"
+---
+##### 3.7 Appendix: Derivatives of Sigmoid (= Logistic) Functions
+
+###### 3.7.1 Derivatives of the simple [*Sigmoid* (= *Logistic*) function](https://en.wikipedia.org/wiki/Logistic_function)
+"
+
+# ╔═╡ c3e20f84-a4d4-4a93-8885-191ca44baf1a
+md"
+
+The simple *sigmoid* (= *logistic*) model function $(0 < f(x) < 1)$ is:
+
+$f(x) = \frac{1}{1+e^{-x}}=\frac{e^x}{e^x(1+e^{-x})}=\frac{e^x}{e^x+e^0}=\frac{e^x}{e^x+1},$ 
+
+
+and
+
+
+$1-f(x) = \frac{e^x+1}{e^x+1} - \frac{e^x}{e^x+1} = \frac{1}{e^x+1}.$
+
+$\;$
+
+$\;$
+
+Applying the *quotient rule* the derivation is either
+
+$f_1'(x) = \frac{0+e^{-x}}{(1+e^{-x})^2}=\frac{e^{-x}}{(1+e^{-x})^2}$
+
+or
+
+$f_2'(x) = \frac{d}{dx}f(x) = \frac{e^x(e^x+1)-e^xe^x}{(e^x+1)^2} = \frac{e^{2x}+e^x-e^{2x}}{(e^x+1)^2} = \frac{e^x}{(e^x+1)^2}.$
+
+$\;$
+
+$\;$
+
+$\;$
+
+
+The *second* case $f_2'(x)$ can be simplified to the product of two terms:
+
+
+
+$f_2'(x) = \frac{e^x}{(e^x+1)^2} = \frac{e^x}{(e^x+1)(e^x+1)} = \frac{e^x}{(e^x+1)} \cdot \frac{1}{(e^x+1)} = f(x)(1-f(x)).$
+
+$\;$
+
+$\;$
+
+$\;$
+
+Another alternative is known as (WolframAlpha, 2023):
+
+$f_3'(x) = \frac{1}{(e^x+1)} - \frac{1}{(e^x+1)^2}.$
+
+$\;$
+
+$\;$
+
+The decomposition $f_2'(x) = f(x)(1-f(x))$ is known as the [*logistic differential equation*](https://en.wikipedia.org/wiki/Logistic_function) with boundary conditions
+
+$\;$
+
+$\;$
+
+$f(0)= \frac{1}{2} \text{ and } f'(0) = \frac{1}{4}.$
+
+$\;$
+
+$\;$
+
+The differential equation is used for the description of simple *growth* or *learning* processes with saturation.
+
+"
+
+
+# ╔═╡ 74b5d35b-cbf2-4e89-8cc6-19ade90c6e04
+let
+	x_k_max = 0
+	L = 0
+	plot(title="Simple Logistic Function f(x) = 1/(1 + exp(-x))")
+	f(x) = exp(x-x_k_max)/(1+exp(x-x_k_max))
+	plot!([x for x in -10:0.1:10], [f(x) for x in -10:0.1:10])
+	plot!([x_k_max, x_k_max],[L, f(x_k_max)], legend=:none)        # vertical line
+	plot!([-10, 0],[f(x_k_max), f(x_k_max)], legend=:none)         # horizntal line
+end # let
+
+# ╔═╡ 2ccd9256-e5e2-4b18-8468-11ab991e01bd
+let
+	plot(title="Derivative fDeriv1(x) of the Simple Logistic Function")
+	fDeriv1(x) = exp(-x)/(1+exp(-x)^2)
+	fDeriv2(x) = exp(x)/(1+exp(x)^2)
+	fDeriv3(x) = 1/(exp(x)+1) - 1/(exp(x)+1)^2
+	plot!([x for x in -10:0.1:10], [fDeriv1(x) for x in -10:0.1:10])
+end # let
+
+# ╔═╡ 6624fd5f-3d74-4607-a090-a61535712eec
+let
+	plot(title="Derivative fDeriv2(x) of the Simple Logistic Function")
+	fDeriv1(x) = exp(-x)/(1+exp(-x)^2)
+	fDeriv2(x) = exp(x)/(1+exp(x)^2)
+	fDeriv3(x) = 1/(exp(x)+1) - 1/(exp(x)+1)^2
+	plot!([x for x in -10:0.1:10], [fDeriv2(x) for x in -10:0.1:10])
+end # let
+
+# ╔═╡ e015f72c-c716-4ca5-8b84-4ef4f43575ab
+let
+	plot(title="Derivative fDeriv3(x) of the Simple Logistic Function")
+	fDeriv1(x) = exp(-x)/(1+exp(-x)^2)
+	fDeriv2(x) = exp(x)/(1+exp(x)^2)
+	fDeriv3(x) = 1/(exp(x)+1) - 1/(exp(x)+1)^2
+	plot!([x for x in -10:0.1:10], [fDeriv3(x) for x in -10:0.1:10])
+end # let
+
+# ╔═╡ 9a9676be-cc57-4814-bfff-08b6cf0ed9f7
+md"
+---
+###### 3.7.2 Derivative of the [*Generalized Sigmoid* (= *Logistic*) function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
+
+"
+
+# ╔═╡ 08b35085-0232-4fc9-83d9-2e444f5f587f
+###### 3.7.2 Derivative of our [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function) 
+
+md"
+---
+
+$f(x) = L + (U-L)\cdot\frac{1}{1+e^{-k\left(x - x_{k_{max}}\right)}}$
+
+where:
+- **$k_{max}$** = $max(k)$ = max. growth rate *k* of $X$
+- **$U$** = Upper (right) asymptote of $X$
+- **$L$** = Lower (left) asymptote of $X$
+- **$x_{k_{max}}$** = $\underset{X}{\operatorname{argmax}\;k} \;\; \text{(= }x\text{ is the inflection point of } k)$ 
+
+$\;$
+
+The original output of $expand\_derivatives(Dx(myModel))$ is:
+
+$f'(x)=\frac{d}{dx}f(x)=0.58\left(\frac{59.36}{(1+e^{-0.58(-15.6+x)})^2} \right)\cdot e^{-0.58(-15.6+x)}.$
+
+$\;$
+
+$\;$
+
+$\;$
+
+When we rearrange terms the similarity with $f_2'(x)$ (above) becomes obvious.
+
+$\;$
+
+$f'(x)=\frac{d}{dx}f(x)=(0.58\cdot 59.36)\left(\frac{e^{-0.58(-15.6+x)}}{(1+e^{-0.58(-15.6+x)})^2} \right)$
+
+$\;$
+
+$\;$
+
+$\;$
+
+$=34.4288\left(\frac{e^{-0.58(-15.6+x)}}{(1+e^{-0.58(-15.6+x)})^2} \right)$
+
+$\;$
+
+$\;$
+
+$\;$
+
+with *boundary conditions*:
+
+$\;$
+
+$f(x_{k_{max}}) = 18.89 + (78.25-18.89)\cdot\frac{1}{2} = 48.57 \text{ and } f'(x_{k_{max}}) = 34.4288\cdot\frac{1}{4} = 8.6072$
+" 
+
+# ╔═╡ 951da7e0-e296-4ef5-b568-ad81ecf790e9
+md"
+The abstracted form of $f'(x)$ is:
+
+$f'(x) = k \cdot (U-L)\cdot \left(\frac{e^{-k\left(x-x_{k_{max}}\right)}}{\left(1+e^{-k\left(x-x_{k_{max}}\right)}\right)^2} \right)$
+
+$\;$
+
+$\;$
+
+with *boundary conditions*
+
+$\;$
+
+$\;$
+
+$f(x_{k_{max}}) = L + (U-L)\cdot\frac{1}{2} \text{ and } f'(x_{k_{max}}) = k\cdot (U-L)\cdot\frac{1}{4}$
+
+"
+
+# ╔═╡ abf63c1c-d799-4aac-9dde-fc22cc963a9b
+let
+	x_k_max = 15.65
+	k = 0.58
+	U = 78.25
+	L = 18.89
+	plot(title="Gen.Log.Fun. f(x) = L+(U-L)/(1 + exp(-k(x-x_k_max))")
+	annotate!(5, 76, "Income1 Data Set")
+	f(x) = L + (U-L)/(1 + exp(-k*(x - x_k_max)))
+	plot!([x for x in 0:0.1:30], [f(x) for x in 0:0.1:30], legend=:none)
+	plot!([x_k_max, x_k_max],[L, f(x_k_max)], legend=:none)        # vertical line
+	plot!([0, x_k_max],[f(x_k_max), f(x_k_max)], legend=:none)     # horizntal line
+end # let
+
+# ╔═╡ 5de8dbf0-95ca-4ad9-8c16-a156721c7ae9
+let
+	#--------------------------------------------------------------------------------
+	plot(title="Derivative of Gener. Sigmoid (= Logistic Diff. Equation)")
+	@variables x
+	L = 18.89        # Lower left asymptote
+	U = 78.25        # Upper right asymptote
+	k =  0.58        # max rate k
+	x_k_max = 15.65  # arg_max k = that x for max k = x|max(k)
+	#--------------------------------------------------------------------------------
+	myModel = L + (U - L)*(1/((1 + exp(-k*(x - x_k_max)))))
+	Dx = Differential(x)
+	dmyModelToX = Dx(myModel)
+	dglx = expand_derivatives(Dx(myModel))
+	expExpression(x) = exp(-k*(-15.65+x))
+	dgl_myModel(x) = 0.58*(59.36/(1+expExpression(x))^2)*expExpression(x)
+	#--------------------------------------------------------------------------------
+	plot!([x for x in 0.65:0.1:15.65*2], [dgl_myModel(x) for x in 0.65:0.1:15.65*2])
+	#--------------------------------------------------------------------------------
+end # let
+
 # ╔═╡ e13cda08-84ec-48c3-ade8-fd61a3c5ac17
 md"
 ---
 ##### References
 - **James, G., Witten, D., Hastie, T. & Tibshirani, R.**; *An Introduction to Statistical Learning, Heidelberg: Springer, 2021, 2/e, 
+- **Wikipedia**; *Logistic Function*; [https://en.wikipedia.org/wiki/Logistic_function](https://en.wikipedia.org/wiki/Logistic_function); last visit 2023/05/07
 - **Wikipedia**; *The Generalized Logistic Function*, [https://en.wikipedia.org/wiki/Generalised_logistic_function](https://en.wikipedia.org/wiki/Generalised_logistic_function); last visit 2023/05/04
+- **WolframAlpha**; Version 1.4.19.2022041167; last visit 23/05/04
 "
 
 # ╔═╡ 75c6cefe-7be7-4086-a5c6-0e8312b8b6ee
@@ -777,22 +1054,22 @@ This is a **draft** under the Attribution-NonCommercial-ShareAlike 4.0 Internati
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 GLM = "38e38edf-8417-5370-95a0-9cbb8c7f171a"
 HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
 LsqFit = "2fda8390-95c7-5789-9bda-21331edee243"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
+Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
 CSV = "~0.10.9"
-DataFrames = "~1.5.0"
 GLM = "~1.8.3"
 HypothesisTests = "~0.10.12"
 LsqFit = "~0.13.0"
 Plots = "~1.38.11"
 StatsPlots = "~0.15.5"
+Symbolics = "~5.3.1"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -801,13 +1078,24 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "2c868093c0b7ac923e4295a34220d5c2222340a1"
+project_hash = "7802db3b7400f501375e0842b626ba779969533a"
+
+[[deps.AbstractAlgebra]]
+deps = ["GroupsCore", "InteractiveUtils", "LinearAlgebra", "MacroTools", "Random", "RandomExtensions", "SparseArrays", "Test"]
+git-tree-sha1 = "3ee5c58774f4487a5bf2bb05e39d91ff5022b4cc"
+uuid = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
+version = "0.29.4"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
 git-tree-sha1 = "16b6dbc4cf7caee4e1e75c49485ec67b667098a0"
 uuid = "621f4979-c628-5d54-868e-fcf4e3e8185c"
 version = "1.3.1"
+
+[[deps.AbstractTrees]]
+git-tree-sha1 = "faa260e4cb5aba097a73fab382dd4b5819d8ec8c"
+uuid = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
+version = "0.4.4"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra", "Requires"]
@@ -848,6 +1136,11 @@ version = "1.0.1"
 
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+
+[[deps.Bijections]]
+git-tree-sha1 = "fe4f8c5ee7f76f2198d5c2a06d3961c249cce7bd"
+uuid = "e2ed5e7c-b2de-5872-ae92-c73ca462fb04"
+version = "0.1.4"
 
 [[deps.BitFlags]]
 git-tree-sha1 = "43b1a4a8f797c1cddadf60499a8a077d4af2cd2d"
@@ -953,6 +1246,11 @@ deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 version = "1.0.1+0"
 
+[[deps.CompositeTypes]]
+git-tree-sha1 = "02d2316b7ffceff992f3096ae48c7829a8aa0638"
+uuid = "b152e2b5-7a66-4b01-a709-34e65c35f657"
+version = "0.1.3"
+
 [[deps.ConcurrentUtilities]]
 deps = ["Serialization", "Sockets"]
 git-tree-sha1 = "b306df2650947e9eb100ec125ff8c65ca2053d30"
@@ -961,30 +1259,19 @@ version = "2.1.1"
 
 [[deps.ConstructionBase]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "89a9db8d28102b094992472d333674bd1a83ce2a"
+git-tree-sha1 = "738fec4d684a9a6ee9598a8bfee305b26831f28c"
 uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
-version = "1.5.1"
+version = "1.5.2"
 
 [[deps.Contour]]
 git-tree-sha1 = "d05d9e7b7aedff4e5b51a029dced05cfb6125781"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.2"
 
-[[deps.Crayons]]
-git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
-uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
-version = "4.1.1"
-
 [[deps.DataAPI]]
 git-tree-sha1 = "e8119c1a33d267e16108be441a287a6981ba1630"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.14.0"
-
-[[deps.DataFrames]]
-deps = ["Compat", "DataAPI", "Future", "InlineStrings", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrettyTables", "Printf", "REPL", "Random", "Reexport", "SentinelArrays", "SnoopPrecompile", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
-git-tree-sha1 = "aa51303df86f8626a962fccb878430cdb0a97eee"
-uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-version = "1.5.0"
 
 [[deps.DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
@@ -1045,6 +1332,12 @@ git-tree-sha1 = "2fb1e02f2b635d0845df5d7c167fec4dd739b00d"
 uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 version = "0.9.3"
 
+[[deps.DomainSets]]
+deps = ["CompositeTypes", "IntervalSets", "LinearAlgebra", "Random", "StaticArrays", "Statistics"]
+git-tree-sha1 = "698124109da77b6914f64edd696be8dccf90229e"
+uuid = "5b8099bc-c8ec-5219-889f-1d9e522a28bf"
+version = "0.6.6"
+
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
@@ -1056,11 +1349,27 @@ git-tree-sha1 = "5837a837389fccf076445fce071c8ddaea35a566"
 uuid = "fa6b7ba4-c1ee-5f82-b5fc-ecf0adba8f74"
 version = "0.6.8"
 
+[[deps.DynamicPolynomials]]
+deps = ["DataStructures", "Future", "LinearAlgebra", "MultivariatePolynomials", "MutableArithmetics", "Pkg", "Reexport", "Test"]
+git-tree-sha1 = "8b84876e31fa39479050e2d3395c4b3b210db8b0"
+uuid = "7c1d4256-1411-5781-91ec-d7bc3513ac07"
+version = "0.4.6"
+
+[[deps.EnumX]]
+git-tree-sha1 = "bdb1942cd4c45e3c678fd11569d5cccd80976237"
+uuid = "4e289a0a-7415-4d19-859d-a7e5c4648b56"
+version = "1.0.4"
+
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "bad72f730e9e91c08d9427d5e8db95478a3c323d"
 uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
 version = "2.4.8+0"
+
+[[deps.ExprTools]]
+git-tree-sha1 = "c1d06d129da9f55715c6c212866f5b1bddc5fa00"
+uuid = "e2ba6199-217a-4e67-a87a-7c52f15ade04"
+version = "0.1.9"
 
 [[deps.FFMPEG]]
 deps = ["FFMPEG_jll"]
@@ -1143,6 +1452,17 @@ git-tree-sha1 = "aa31987c2ba8704e23c6c8ba8a4f769d5d7e4f91"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.10+0"
 
+[[deps.FunctionWrappers]]
+git-tree-sha1 = "d62485945ce5ae9c0c48f124a84998d755bae00e"
+uuid = "069b7b12-0de2-55c6-9aab-29f3d0a68a2e"
+version = "1.1.3"
+
+[[deps.FunctionWrappersWrappers]]
+deps = ["FunctionWrappers"]
+git-tree-sha1 = "b104d487b34566608f8b4e1c39fb0b10aa279ff8"
+uuid = "77dc65aa-8811-40c2-897b-53d922fa7daf"
+version = "0.1.3"
+
 [[deps.Future]]
 deps = ["Random"]
 uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
@@ -1158,6 +1478,12 @@ deps = ["Distributions", "LinearAlgebra", "Printf", "Reexport", "SparseArrays", 
 git-tree-sha1 = "97829cfda0df99ddaeaafb5b370d6cab87b7013e"
 uuid = "38e38edf-8417-5370-95a0-9cbb8c7f171a"
 version = "1.8.3"
+
+[[deps.GPUArraysCore]]
+deps = ["Adapt"]
+git-tree-sha1 = "1cd7f0af1aa58abc02ea1d872953a97359cb87fa"
+uuid = "46192b85-c4d5-4398-a991-12ede77f4527"
+version = "0.1.4"
 
 [[deps.GR]]
 deps = ["Artifacts", "Base64", "DelimitedFiles", "Downloads", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Pkg", "Preferences", "Printf", "Random", "Serialization", "Sockets", "TOML", "Tar", "Test", "UUIDs", "p7zip_jll"]
@@ -1194,6 +1520,18 @@ git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
 uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
 version = "1.0.2"
 
+[[deps.Groebner]]
+deps = ["AbstractAlgebra", "Combinatorics", "Logging", "MultivariatePolynomials", "Primes", "Random", "SnoopPrecompile"]
+git-tree-sha1 = "b6c3e9e1eb8dcc6fd9bc68fe08dcc7ab22710de6"
+uuid = "0b43b601-686d-58a3-8a1c-6623616c7cd4"
+version = "0.3.4"
+
+[[deps.GroupsCore]]
+deps = ["Markdown", "Random"]
+git-tree-sha1 = "9e1a5e9f3b81ad6a5c613d181664a0efc6fe6dd7"
+uuid = "d5909c97-4eac-4ecc-a3dc-fdd0858a4120"
+version = "0.4.0"
+
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
 git-tree-sha1 = "69182f9a2d6add3736b7a06ab6416aafdeec2196"
@@ -1218,11 +1556,21 @@ git-tree-sha1 = "3eaee0f574ae7918e0529ed37a2652c6c17d4948"
 uuid = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
 version = "0.10.12"
 
+[[deps.IfElse]]
+git-tree-sha1 = "debdd00ffef04665ccbb3e150747a77560e8fad1"
+uuid = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
+version = "0.1.1"
+
 [[deps.InlineStrings]]
 deps = ["Parsers"]
 git-tree-sha1 = "9cc2baf75c6d09f9da536ddf58eb2f29dedaf461"
 uuid = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
 version = "1.4.0"
+
+[[deps.IntegerMathUtils]]
+git-tree-sha1 = "f366daebdfb079fd1fe4e3d560f99a0c892e15bc"
+uuid = "18e54dd8-cb9d-406c-a71d-865a43cbb235"
+version = "0.1.0"
 
 [[deps.IntelOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1240,16 +1588,17 @@ git-tree-sha1 = "721ec2cf720536ad005cb38f50dbba7b02419a15"
 uuid = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 version = "0.14.7"
 
+[[deps.IntervalSets]]
+deps = ["Dates", "Random", "Statistics"]
+git-tree-sha1 = "16c0cc91853084cb5f58a78bd209513900206ce6"
+uuid = "8197267c-284f-5f27-9208-e0e47529a953"
+version = "0.7.4"
+
 [[deps.InverseFunctions]]
 deps = ["Test"]
 git-tree-sha1 = "6667aadd1cdee2c6cd068128b3d226ebc4fb0c67"
 uuid = "3587e190-3f89-42d0-90ee-14403ec27112"
 version = "0.1.9"
-
-[[deps.InvertedIndices]]
-git-tree-sha1 = "0dc7b50b8d436461be01300fd8cd45aa0274b038"
-uuid = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
-version = "1.3.0"
 
 [[deps.IrrationalConstants]]
 git-tree-sha1 = "630b497eafcc20001bba38a4651b327dcfc491d2"
@@ -1314,11 +1663,28 @@ git-tree-sha1 = "f2355693d6778a178ade15952b7ac47a4ff97996"
 uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.3.0"
 
+[[deps.LabelledArrays]]
+deps = ["ArrayInterface", "ChainRulesCore", "ForwardDiff", "LinearAlgebra", "MacroTools", "PreallocationTools", "RecursiveArrayTools", "StaticArrays"]
+git-tree-sha1 = "cd04158424635efd05ff38d5f55843397b7416a9"
+uuid = "2ee39098-c373-598a-b85f-a56591580800"
+version = "1.14.0"
+
+[[deps.LambertW]]
+git-tree-sha1 = "c5ffc834de5d61d00d2b0e18c96267cffc21f648"
+uuid = "984bce1d-4616-540c-a9ee-88d1112d94c9"
+version = "0.4.6"
+
 [[deps.Latexify]]
 deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Printf", "Requires"]
 git-tree-sha1 = "099e356f267354f46ba65087981a77da23a279b7"
 uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 version = "0.16.0"
+
+[[deps.Lazy]]
+deps = ["MacroTools"]
+git-tree-sha1 = "1370f8202dac30758f3c345f9909b97f53d87d3f"
+uuid = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
+version = "0.15.1"
 
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
@@ -1464,11 +1830,23 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2022.2.1"
 
+[[deps.MultivariatePolynomials]]
+deps = ["ChainRulesCore", "DataStructures", "LinearAlgebra", "MutableArithmetics"]
+git-tree-sha1 = "eaa98afe2033ffc0629f9d0d83961d66a021dfcc"
+uuid = "102ac46a-7ee4-5c85-9060-abc95bfdeaa3"
+version = "0.4.7"
+
 [[deps.MultivariateStats]]
 deps = ["Arpack", "LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI", "StatsBase"]
 git-tree-sha1 = "68bf5103e002c44adfd71fea6bd770b3f0586843"
 uuid = "6f286f6a-111f-5878-ab1e-185364afe411"
 version = "0.10.2"
+
+[[deps.MutableArithmetics]]
+deps = ["LinearAlgebra", "SparseArrays", "Test"]
+git-tree-sha1 = "964cb1a7069723727025ae295408747a0b36a854"
+uuid = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
+version = "1.3.0"
 
 [[deps.NLSolversBase]]
 deps = ["DiffResults", "Distributed", "FiniteDiff", "ForwardDiff"]
@@ -1611,6 +1989,12 @@ git-tree-sha1 = "a6062fe4063cdafe78f4a0a81cfffb89721b30e7"
 uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
 version = "1.4.2"
 
+[[deps.PreallocationTools]]
+deps = ["Adapt", "ArrayInterface", "ForwardDiff", "Requires"]
+git-tree-sha1 = "f739b1b3cc7b9949af3b35089931f2b58c289163"
+uuid = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
+version = "0.4.12"
+
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
 git-tree-sha1 = "d0984cc886c48e5a165705ce65236dc2ec467b91"
@@ -1623,11 +2007,11 @@ git-tree-sha1 = "7eb1686b4f04b82f96ed7a4ea5890a4f0c7a09f1"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
 version = "1.4.0"
 
-[[deps.PrettyTables]]
-deps = ["Crayons", "Formatting", "LaTeXStrings", "Markdown", "Reexport", "StringManipulation", "Tables"]
-git-tree-sha1 = "213579618ec1f42dea7dd637a42785a608b1ea9c"
-uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "2.2.4"
+[[deps.Primes]]
+deps = ["IntegerMathUtils"]
+git-tree-sha1 = "311a2aa90a64076ea0fac2ad7492e914e6feeb81"
+uuid = "27ebfcd6-29c5-5fa9-bf4b-fb8fc14df3ae"
+version = "0.5.3"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -1653,6 +2037,12 @@ uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 deps = ["SHA", "Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
+[[deps.RandomExtensions]]
+deps = ["Random", "SparseArrays"]
+git-tree-sha1 = "062986376ce6d394b23d5d90f01d81426113a3c9"
+uuid = "fb686558-2515-59ef-acaa-46db3789a887"
+version = "0.4.3"
+
 [[deps.Ratios]]
 deps = ["Requires"]
 git-tree-sha1 = "6d7bb727e76147ba18eed998700998e17b8e4911"
@@ -1670,6 +2060,12 @@ deps = ["Dates", "NaNMath", "PlotUtils", "PrecompileTools", "RecipesBase"]
 git-tree-sha1 = "45cf9fd0ca5839d06ef333c8201714e888486342"
 uuid = "01d81517-befc-4cb6-b9ec-a95719d0359c"
 version = "0.6.12"
+
+[[deps.RecursiveArrayTools]]
+deps = ["Adapt", "ArrayInterface", "DocStringExtensions", "GPUArraysCore", "IteratorInterfaceExtensions", "LinearAlgebra", "RecipesBase", "Requires", "StaticArraysCore", "Statistics", "SymbolicIndexingInterface", "Tables"]
+git-tree-sha1 = "68078e9fa9130a6a768815c48002d0921a232c11"
+uuid = "731186ca-8d62-57ce-b412-fbd966d074cd"
+version = "2.38.4"
 
 [[deps.Reexport]]
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
@@ -1706,9 +2102,27 @@ git-tree-sha1 = "e19c09f5cc868785766f86435ba40576cf751257"
 uuid = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 version = "2.0.14"
 
+[[deps.RuntimeGeneratedFunctions]]
+deps = ["ExprTools", "SHA", "Serialization"]
+git-tree-sha1 = "f139e81a81e6c29c40f1971c9e5309b09c03f2c3"
+uuid = "7e49a35a-f44a-4d26-94aa-eba1b4ca6b47"
+version = "0.5.6"
+
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 version = "0.7.0"
+
+[[deps.SciMLBase]]
+deps = ["ArrayInterface", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "EnumX", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "Preferences", "RecipesBase", "RecursiveArrayTools", "Reexport", "RuntimeGeneratedFunctions", "SciMLOperators", "SnoopPrecompile", "StaticArraysCore", "Statistics", "SymbolicIndexingInterface", "Tables", "TruncatedStacktraces"]
+git-tree-sha1 = "392d3e28b05984496af37100ded94dc46fa6c8de"
+uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+version = "1.91.7"
+
+[[deps.SciMLOperators]]
+deps = ["ArrayInterface", "DocStringExtensions", "Lazy", "LinearAlgebra", "Setfield", "SparseArrays", "StaticArraysCore", "Tricks"]
+git-tree-sha1 = "e61e48ef909375203092a6e83508c8416df55a83"
+uuid = "c0aeaf25-5076-4817-a8d5-81caf7dfa961"
+version = "0.2.0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -1821,14 +2235,27 @@ git-tree-sha1 = "14ef622cf28b05e38f8af1de57bc9142b03fbfe3"
 uuid = "f3b207a7-027a-5e70-b257-86293d7955fd"
 version = "0.15.5"
 
-[[deps.StringManipulation]]
-git-tree-sha1 = "46da2434b41f41ac3594ee9816ce5541c6096123"
-uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
-version = "0.3.0"
-
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
+
+[[deps.SymbolicIndexingInterface]]
+deps = ["DocStringExtensions"]
+git-tree-sha1 = "f8ab052bfcbdb9b48fad2c80c873aa0d0344dfe5"
+uuid = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
+version = "0.2.2"
+
+[[deps.SymbolicUtils]]
+deps = ["AbstractTrees", "Bijections", "ChainRulesCore", "Combinatorics", "ConstructionBase", "DataStructures", "DocStringExtensions", "DynamicPolynomials", "IfElse", "LabelledArrays", "LinearAlgebra", "MultivariatePolynomials", "NaNMath", "Setfield", "SparseArrays", "SpecialFunctions", "StaticArrays", "TimerOutputs", "Unityper"]
+git-tree-sha1 = "5cb1f963f82e7b81305102dd69472fcd3e0e1483"
+uuid = "d1185830-fcd6-423d-90d6-eec64667417b"
+version = "1.0.5"
+
+[[deps.Symbolics]]
+deps = ["ArrayInterface", "ConstructionBase", "DataStructures", "DiffRules", "Distributions", "DocStringExtensions", "DomainSets", "Groebner", "IfElse", "LaTeXStrings", "LambertW", "Latexify", "Libdl", "LinearAlgebra", "MacroTools", "Markdown", "NaNMath", "RecipesBase", "Reexport", "Requires", "RuntimeGeneratedFunctions", "SciMLBase", "Setfield", "SparseArrays", "SpecialFunctions", "StaticArrays", "SymbolicUtils", "TreeViews"]
+git-tree-sha1 = "e23ec62c083ca8f15a4b7174331b3b8d1c511e47"
+uuid = "0c5d862f-8b57-4792-8d23-62f2024744c7"
+version = "5.3.1"
 
 [[deps.TOML]]
 deps = ["Dates"]
@@ -1868,11 +2295,34 @@ version = "0.1.1"
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
+[[deps.TimerOutputs]]
+deps = ["ExprTools", "Printf"]
+git-tree-sha1 = "f548a9e9c490030e545f72074a41edfd0e5bcdd7"
+uuid = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
+version = "0.5.23"
+
 [[deps.TranscodingStreams]]
 deps = ["Random", "Test"]
 git-tree-sha1 = "9a6ae7ed916312b41236fcef7e0af564ef934769"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
 version = "0.9.13"
+
+[[deps.TreeViews]]
+deps = ["Test"]
+git-tree-sha1 = "8d0d7a3fe2f30d6a7f833a5f19f7c7a5b396eae6"
+uuid = "a2a6695c-b41b-5b7d-aed9-dbfdeacea5d7"
+version = "0.3.0"
+
+[[deps.Tricks]]
+git-tree-sha1 = "aadb748be58b492045b4f56166b5188aa63ce549"
+uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
+version = "0.1.7"
+
+[[deps.TruncatedStacktraces]]
+deps = ["InteractiveUtils", "MacroTools", "Preferences"]
+git-tree-sha1 = "7bc1632a4eafbe9bd94cf1a784a9a4eb5e040a91"
+uuid = "781d530d-4396-4725-bb49-402e4bee1e77"
+version = "1.3.0"
 
 [[deps.URIs]]
 git-tree-sha1 = "074f993b0ca030848b897beff716d93aca60f06a"
@@ -1891,6 +2341,12 @@ deps = ["REPL"]
 git-tree-sha1 = "53915e50200959667e78a92a418594b428dffddf"
 uuid = "1cfade01-22cf-5700-b092-accc4b62d6e1"
 version = "0.4.1"
+
+[[deps.Unityper]]
+deps = ["ConstructionBase"]
+git-tree-sha1 = "d5f4ec8c22db63bd3ccb239f640e895cfde145aa"
+uuid = "a7c27f48-0311-42f6-a7f8-2c11e75eb415"
+version = "0.1.2"
 
 [[deps.Unzip]]
 git-tree-sha1 = "ca0969166a028236229f63514992fc073799bb78"
@@ -2153,7 +2609,7 @@ version = "1.4.1+0"
 
 # ╔═╡ Cell order:
 # ╟─faef2569-8983-4704-9e1a-7080fb16dd06
-# ╠═f47f7410-e2a8-11ed-20b1-87560a4c3ab4
+# ╠═849dbc25-8dd1-416b-b706-672e826eec6a
 # ╟─622d27ff-e36f-4b69-949d-1fa78a8413ce
 # ╟─7b047630-b637-47ee-9aee-6d685dd3e773
 # ╟─f698b886-e349-436f-932d-657bf7ff1eb5
@@ -2171,6 +2627,7 @@ version = "1.4.1+0"
 # ╟─bfcdfaf5-50c1-452a-946b-941e5c4c1041
 # ╟─5479bd68-aafa-47c6-bce5-d5a8817c131a
 # ╟─92ea0bb5-d318-4758-83c9-ac5960918e12
+# ╟─e5a0b52d-f482-43fa-9efc-84ecd0711794
 # ╟─5adf8b34-2d41-4b15-8c13-0cbf84ed0cce
 # ╟─ec30ce62-3699-40f8-88c3-8e394d6d826e
 # ╟─c54e5513-f30a-4bc1-afe0-102ba43a6f87
@@ -2206,6 +2663,17 @@ version = "1.4.1+0"
 # ╟─e354fade-e1d8-4bd2-8e47-ec4046354c55
 # ╟─9c286327-ffad-41bf-85bf-e843a3cedcf0
 # ╟─f768add3-38aa-40e1-bc95-661f380a817d
+# ╟─2ad1fc50-3505-4a58-a248-c9453df6cc01
+# ╟─c3e20f84-a4d4-4a93-8885-191ca44baf1a
+# ╟─74b5d35b-cbf2-4e89-8cc6-19ade90c6e04
+# ╟─2ccd9256-e5e2-4b18-8468-11ab991e01bd
+# ╟─6624fd5f-3d74-4607-a090-a61535712eec
+# ╟─e015f72c-c716-4ca5-8b84-4ef4f43575ab
+# ╟─9a9676be-cc57-4814-bfff-08b6cf0ed9f7
+# ╟─08b35085-0232-4fc9-83d9-2e444f5f587f
+# ╟─951da7e0-e296-4ef5-b568-ad81ecf790e9
+# ╟─abf63c1c-d799-4aac-9dde-fc22cc963a9b
+# ╟─5de8dbf0-95ca-4ad9-8c16-a156721c7ae9
 # ╟─e13cda08-84ec-48c3-ade8-fd61a3c5ac17
 # ╟─75c6cefe-7be7-4086-a5c6-0e8312b8b6ee
 # ╟─6566d57d-d090-4bed-87e8-be8b516e86e1
