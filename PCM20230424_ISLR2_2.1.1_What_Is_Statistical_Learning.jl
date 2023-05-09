@@ -5,14 +5,14 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ 849dbc25-8dd1-416b-b706-672e826eec6a
-using CSV, Plots, GLM, LsqFit, Statistics,StatsPlots,HypothesisTests
+using CSV, Plots, GLM, LsqFit, Statistics,StatsPlots, HypothesisTests
 
 # ╔═╡ faef2569-8983-4704-9e1a-7080fb16dd06
 md"
 =====================================================================================
 #### ISLR2_2.1.1 What Is Statistical Learning ?
 ##### file: PCM20230424\_ISLR2\_2.1.1\_What\_Is\_Statistical\_Learning.jl
-##### Julia/Pluto (1.8.5/0.19.14) by PCM *** 2023/05/08 ***
+##### Julia/Pluto (1.8.5/0.19.14) by PCM *** 2023/05/09 ***
 =====================================================================================
 "
 
@@ -557,245 +557,108 @@ Despite the fact that the frequencies of the two extreme groups $lxly$ and $hxhy
 
 "
 
-# ╔═╡ 19579a86-97ef-4d18-9a71-89fc350571a8
+# ╔═╡ 2db54260-2d77-40a1-834f-d6d0e4164e44
 md"
 ---
 ##### 3.6 ISLR2, Fig.2.3 $Income \rightarrow Education \times Seniority$
 ###### 3.6.1 3D Plot
 "
 
-# ╔═╡ 976f54be-4c0f-409b-bf8c-e37d494b472c
+# ╔═╡ 8beec881-7371-40dc-948d-deb61ad2d99f
 let
 	#--------------------------------------------------------------------------------
-	Plots.plot(title="3D-Plot of 'Income2'-Data (cf. ISLR2, Fig.2.3)", legend=:none, windowsize= (600*2.0, 400*2.0))
-	xs  = income2DataFrame.Education
-	ys  = income2DataFrame.Seniority 
-	zs  = income2DataFrame.Income
+	xs = income2DataFrame.Education
+	ys = income2DataFrame.Seniority
+	zs = income2DataFrame.Income
 	#--------------------------------------------------------------------------------
-	rXY   = round(cor(xs, ys), digits=2)
-	rXYsQ = round(rXY^2, digits=2)
-	#--------------------------------------------------------------------------------
-	Plots.plot!(xs, ys, zs, seriestype=:scatter, markersize=8, xlabel="Education", ylabel="Seniority", zlabel="Income", grid=(10))
-	#--------------------------------------------------------------------------------
-	annotate!(31.8, 20, 110, "r(Edu, Sen)=$rXY", 15)
-	annotate!(31.4, 15, 100, "r^2(Edu, Sen)=$rXYsQ", 15)
-	annotate!(32.9, 15, 95, "p_corr=0.30", 15)
+	plot(title="Income X Education X Seniority (ISLR2e, Fig. 2.3 - (new))", xlims=(10,20), ylims=(25,180), zlims=(0,100), windowsize=(600*2, 400*2))
+	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(40,30))
 	#--------------------------------------------------------------------------------
 end # let
 
-# ╔═╡ 2ae93ea8-4106-4ff5-b69d-a5d1847e32aa
+# ╔═╡ 55f36e93-0c4e-4eaf-962e-e6ff7cf3e321
 md"
 ---
-###### 3.6.2 *Multiple* Linear Regression $Income \rightarrow Education \times Seniority$ with 2 Predictors
+###### 3.6.2 Multiple Linear Regression $Income \rightarrow Education + Seniority$
+
+This model has $3$ parameters.
 "
 
-# ╔═╡ 3e40aac3-88b2-4b8c-a003-03e7317d107c
+# ╔═╡ fcbbb2c6-55ca-4302-bd7c-638ba47ac9de
 let
-	#-------------------------------------------------------------------------------
-	xs  = income2DataFrame.Education
-	ys  = income2DataFrame.Seniority 
-	zs  = income2DataFrame.Income
-	#-------------------------------------------------------------------------------
-	ols_lin = lm(@formula(Income ~ 1 + Education + Seniority), income2DataFrame)
-	yhat = predict(ols_lin)
-	#-------------------------------------------------------------------------------
-	e    = residuals(ols_lin)
-	sse  = round(e'e, digits=2)
-	#-------------------------------------------------------------------------------
-	rXYhat   = round(cor(xs, yhat), digits=2)
-	rXYhatsQ = round(rXYhat^2, digits=2)
-	#-------------------------------------------------------------------------------
-	Plots.plot(title="3D-Plot of 'Income2'-Data (cf. ISLR2, Fig.2.3)", legend=:none, windowsize= (600*2.0, 400*2.0))
-	#-------------------------------------------------------------------------------
-	Plots.surface!(xs, ys, yhat, c=:viridis, legend=:none, xlabel="Education", ylabel="Seniority", zlabel="Income", nx=200, ny=200, display_option=Plots.GR.OPTION_SHADED_MESH, grid=(10))
-	#-------------------------------------------------------------------------------
-	Plots.plot!(xs, ys, zs, seriestype=:scatter, markersize=8, xlabel="Education", ylabel="Seniority", zlabel="Income", grid=(10))
-	#-------------------------------------------------------------------------------
-	Plots.plot!(map((x, y, z, yh) -> ([x, x], [y, y], [z, yh]), xs, ys, zs, yhat), label="", linewidth = 4)
-	#-------------------------------------------------------------------------------
-	annotate!(31, 20, 110, "multiple R=$rXYhat", 15)
-	annotate!(32.3, 17, 105, "R^2=$rXYhatsQ", 15)
-	#-------------------------------------------------------------------------------
+	#--------------------------------------------------------------------------------
+	xs = income2DataFrame.Education
+	ys = income2DataFrame.Seniority
+	zs = income2DataFrame.Income
+	#--------------------------------------------------------------------------------
+	ols_lin1 = lm(@formula(Income ~ 1 + Education + Seniority), income2DataFrame)
+	zhat1 = predict(ols_lin1)
+	multipleR1   = round(cor(zs, zhat1), digits=4)
+	multipleRsQ1 = multipleR1^2
+	#--------------------------------------------------------------------------------
+	plot(title="Linear Regression: Income -> Education + Seniority (ISLR2e, Fig. 2.3 - (new))", xlims=(10,20), ylims=(25,180), zlims=(0,100), windowsize=(600*2, 400*2))
+	plot!(map((x, y, z, zh) -> ([x, x], [y, y], [z, zh]), xs, ys, zs, zhat1), label="", linewidth=3)
+	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(40,30))
+	plot!(xs, ys, zhat1, seriestype=:surface, color=:viridis, legend=:none, colorbar=false, alpha=0.5)
+	annotate!(22,160,0, "multiple R = $multipleR1")
+	#--------------------------------------------------------------------------------
 end # let
 
-# ╔═╡ 6177f953-55a0-43cb-8d37-4990461b946b
+# ╔═╡ cf103b63-ee7e-4970-9f85-b6b9ae72e025
 md"
 ---
-###### 3.6.3 *Simple* Linear Regression $Income \rightarrow (Education \cdot Seniority)$ with 1 Predictor
-
-Concerning $R^2$ this is *no* improvement in comparison against the multiple *linear* model (above). But because we have only 2 parameters, we prefer *this* model.
+###### 3.6.3 Single Prediction Linear Regression $Income \rightarrow (Education \cdot Seniority)$
+This model has $2$ parameters.
 "
 
-# ╔═╡ 98bbe5b4-3811-405f-9965-48885038cac5
+# ╔═╡ b276aaa9-ee61-444c-a4fa-c09f62f792b8
 let
-	#-------------------------------------------------------------------------------
-	xs  = income2DataFrame.Education
-	ys  = income2DataFrame.Seniority 
-	zs  = income2DataFrame.Income
-	#-------------------------------------------------------------------------------
-	ols_lin = lm(@formula(Income ~ 1 + Education*Seniority), income2DataFrame)
-	yhat = predict(ols_lin)
-	#-------------------------------------------------------------------------------
-	e    = residuals(ols_lin)
-	sse  = round(e'e, digits=2)
-	#-------------------------------------------------------------------------------
-	rXYhat   = round(cor(xs, yhat), digits=2)
-	rXYhatsQ = round(rXYhat^2, digits=2)
-	#-------------------------------------------------------------------------------
-	Plots.plot(title="3D-Plot of 'Income2'-Data (cf. ISLR2, Fig.2.3)", legend=:none, windowsize= (600*2.0, 400*2.0))
-	#-------------------------------------------------------------------------------
-	Plots.surface!(xs, ys, yhat, c=:viridis, legend=:none, xlabel="Education", ylabel="Seniority", zlabel="Income", nx=200, ny=200, display_option=Plots.GR.OPTION_SHADED_MESH, grid=(10))
-	#-------------------------------------------------------------------------------
-	Plots.plot!(xs, ys, zs, seriestype=:scatter, markersize=8, xlabel="Education", ylabel="Seniority", zlabel="Income", grid=(10))
-	#-------------------------------------------------------------------------------
-	Plots.plot!(map((x, y, z, yh) -> ([x, x], [y, y], [z, yh]), xs, ys, zs, yhat), label="", linewidth = 4)
-	#-------------------------------------------------------------------------------
-	annotate!(31, 20, 110, "multiple R=$rXYhat", 15)
-	annotate!(32.3, 17, 105, "R^2=$rXYhatsQ", 15)
-	#-------------------------------------------------------------------------------
+	#--------------------------------------------------------------------------------
+	xs = income2DataFrame.Education
+	ys = income2DataFrame.Seniority
+	zs = income2DataFrame.Income
+	#--------------------------------------------------------------------------------
+	ols_lin2 = lm(@formula(Income ~ 1 + Education&Seniority), income2DataFrame)
+	zhat2 = predict(ols_lin2)
+	multipleR2   = round(cor(zs, zhat2), digits=4)
+	multipleRsQ2 = multipleR2^2
+	#--------------------------------------------------------------------------------
+	plot(title="Linear Regression: Income -> (Education * Seniority) (ISLR2e, Fig. 2.3 - (new))", xlims=(10,20), ylims=(25,180), zlims=(0,100), windowsize=(600*2, 400*2))
+	plot!(map((x, y, z, zh) -> ([x, x], [y, y], [z, zh]), xs, ys, zs, zhat2), label="", linewidth=3)
+	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(40,30))
+	plot!(xs, ys, zhat2, seriestype=:surface, color=:viridis, legend=:none, colorbar=false, alpha=0.5)
+	annotate!(22,160,0, "multiple R = $multipleR2")
+	#--------------------------------------------------------------------------------
+	# (multipleR1, multipleR2,  multipleR3, multipleRsQ1, multipleRsQ2, multipleRsQ2)
 end # let
 
-# ╔═╡ 60bbd574-5246-4145-819b-f149eedcdcdc
+# ╔═╡ 01cc3ff4-e7a8-4610-b990-088eedbfcd9a
 md"
 ---
-###### 3.6.4 NonLinear Surface $Income \rightarrow Education \times Seniority$
+###### 3.6.4 Multiple Lin. Regression $Income \rightarrow Education, Seniority,(Education \cdot Seniority)$
+
+This model has $4$ parameters: constant, one weight for each predictor plus one weight for the interaction term.
 "
 
-# ╔═╡ 8082f864-ece5-424d-ac92-93ca8f344ced
+# ╔═╡ 347ae10c-0991-4cd7-b0d2-d87de4b43f17
 let
-	xs  = income2DataFrame.Education
-	ys  = income2DataFrame.Seniority
-	zs  = income2DataFrame.Income
-	#-------------------------------------------------------------------------------
-	ols_lin = lm(@formula(Income ~ 1 + Education + Seniority), income2DataFrame)
-	yhat = predict(ols_lin)
-	#-------------------------------------------------------------------------------
-	Plots.plot(title="3D-Plot of 'Income2'-Data (cf. ISLR2, Fig.2.3)", legend=:none, windowsize= (600*2.0, 400*2.0))
-	#----------------------------------------------------------------
-	Plots.surface!(xs, ys, zs, c=:viridis, legend=:none, xlabel="Education", ylabel="Seniority", zlabel="Income", nx=200, ny=200, display_option=Plots.GR.OPTION_SHADED_MESH, grid=(10))
-	#-------------------------------------------------------------------------------
-	Plots.plot!(xs, ys, zs, seriestype=:scatter, markersize=8, xlabel="Education", ylabel="Seniority", zlabel="Income", grid=(10))
-	#-------------------------------------------------------------------------------
-	Plots.plot!(map((x, y, z, yh) -> ([x, x], [y, y], [z, yh]), xs, ys, zs, yhat), label="", linewidth = 4)
-	#-------------------------------------------------------------------------------
-end # let
-
-# ╔═╡ 9bc9fe72-7dee-495e-9e0a-cc86ae653092
-md"
----
-
-###### 3.6.5 Nonlinear Bivariate Model using the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
-
-The *marginal* (*univariate*) model functions are:
-
-$f(X) = L_X + \frac{U_X - L_X}{1+ e^{-k_X \left(X - x_{k_{X_{max}}} \right)}},$
-
-and
-
-$f(Y) = L_Y + \frac{U_Y-L_Y}{1+e^{-k_Y\left(Y - y_{k_{Y_{max}}}\right)}}.$
-
-where:
-
-- **$U$** = Upper (right) asymptote of $X$ and $Y$
-- **$L$** = Lower (left) asymptote of $X$ and $Y$
-- **$x_{k_{max}},y_{k_{max}}$** = $\underset{X,Y}{\operatorname{argmax}\;k} \;\; \text{(= }x \text{ and } y\text{ are the inflection points of rates } k$ of $X$ and $Y)$  
-- **$k_{x_{max}}$** = $max(k_x)$ = max. growth rate $k_x$ of $X$ in simple standard logistic function
-- **$k_{y_{max}}$** = $max(k_y)$ = max. growth rate $k_y$ of $Y$ in simple standard logistic function
-
-The *bivariate* model function is: 
-
-$f(X, Y) = \frac{f(X)f(Y)}{c}.$
-
-"
-
-# ╔═╡ e354fade-e1d8-4bd2-8e47-ec4046354c55
-md"
-
-where $c$ is a normalizing factor so that the predicted range approximates the range of the dependent variable $Z$.
-
-The product of the *marginal* functions is possible, because the correlation $r_{X,Y}$ is not significant. So the predictor variables $Education$ and $Seniority$ are *independent*.
-"
-
-# ╔═╡ 9c286327-ffad-41bf-85bf-e843a3cedcf0
-let    
 	#--------------------------------------------------------------------------------
-	zs  = income2DataFrame.Income
-	xs  = [x for x in range(9, 22; length=30)]
-	ys  = [y for y in range(9, 200; length=30)]
+	xs = income2DataFrame.Education
+	ys = income2DataFrame.Seniority
+	zs = income2DataFrame.Income
 	#--------------------------------------------------------------------------------
-	# parmsX[1] = L (= Lower (left) asymptote)
-	# prmsX[2] = U (= Upper (right) asymptote)
-	# prmsX[3] = k (= growth rate)
-	# prmsX[4] = x_k_max (= x of max k = infection point of k
+	ols_lin3 = lm(@formula(Income ~ 1 + Education*Seniority), income2DataFrame)
+	zhat3 = predict(ols_lin3)
+	multipleR3   = round(cor(zs, zhat3), digits=4)
+	multipleRsQ3 = multipleR3^2
 	#--------------------------------------------------------------------------------
-	# myModel(xs, p) = p[1] .+ (p[2] .- p[1])./((1 .+ exp.(-p[3] .* (xs .- p[4]))))
-	myModel(x, p) = p[1] + (p[2] - p[1])/((1 + exp(-p[3] * (x - p[4]))))
+	plot(title="Multiple Lin. Regression: Income -> f(Education, Seniority, Education * Seniority) (ISLR2e, Fig. 2.3 - (new))", xlims=(10,20), ylims=(25,180), zlims=(0,100), windowsize=(600*2, 400*2))
+	plot!(map((x, y, z, zh) -> ([x, x], [y, y], [z, zh]), xs, ys, zs, zhat3), label="", linewidth=3)
+	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(40,30))
+	plot!(xs, ys, zhat3, seriestype=:surface, color=:viridis, legend=:none, colorbar=false, alpha=0.5)
+	annotate!(22,160,0, "multiple R = $multipleR3")
 	#--------------------------------------------------------------------------------
-	function myModelXY(x, y) 
-		parmsX = [28.0, 88.0, 0.9, 16.0]          # initial estimates of parms
-		zhatX = myModel(x, parmsX)
-		#----------------------------------------------------------------------
-		parmsY = [40.0, 78.0, 4.0, 70.0]          # initial estimates of parms
-		zhatY = myModel(y, parmsY)
-		#----------------------------------------------------------------------
-		zhatXY = (zhatX * zhatY)/17.2
-		#----------------------------------------------------------------------
-	end # function myModelXY
-	#-------------------------------------------------------------------------------
-	fs = [myModelXY(x, y) for x in xs for y in ys]
-	#-------------------------------------------------------------------------------
-	Plots.plot(title="3D-Wireframe of ISLR2-Data 'Income2' (cf.Fig.2.3)", legend=:none, windowsize= (600*2.0, 400*2.0))
-	#-------------------------------------------------------------------------------
-	Plots.wireframe!(xs, ys, fs, legend=:none, xlabel="Education", ylabel="Seniority", zlabel="Income", nx=200, ny=200, camera=(40, 20))
-	#---------------------------------------------------------------
-	# Plots.wireframe!(xs, ys, fs, legend=:none, xlabel="Education", ylabel="Seniority", zlabel="Income", nx=200, ny=200, color=:viridis, display_option=Plots.GR.OPTION_SHADED_MESH,  camera=(40, 20))
-	#-------------------------------------------------------------------------------
-	annotate!(31, 20, 310, "r(Edu, Sen)=0.19", 15)
-	annotate!(32.5, 15, 295, "p_corr=0.30", 15)
-	#-------------------------------------------------------------------------------
-end # let
-
-# ╔═╡ f768add3-38aa-40e1-bc95-661f380a817d
-let    
-	#--------------------------------------------------------------------------------
-	# xs  = income2DataFrame.Education
-	# ys  = income2DataFrame.Seniority
-	zs  = income2DataFrame.Income
-	xs  = [x for x in range(9, 22; length=30)]
-	ys  = [y for y in range(9, 200; length=30)]
-	#--------------------------------------------------------------------------------
-	# parmsX[1] = L (= Lower (left) asymptote)
-	# prmsX[2] = U (= Upper (right) asymptote)
-	# prmsX[3] = k (= growth rate)
-	# prmsX[4] = x_k_max (= x of max k = infection point of k
-	#--------------------------------------------------------------------------------
-	# myModel(xs, p) = p[1] .+ (p[2] .- p[1])./((1 .+ exp.(-p[3] .* (xs .- p[4]))))
-	myModel(x, p) = p[1] + (p[2] - p[1])/((1 + exp(-p[3] * (x - p[4]))))
-	#--------------------------------------------------------------------------------
-	function myModelXY(x, y) 
-		parmsX = [28.0, 88.0, 0.9, 16.0]          # initial estimates of parms
-		zhatX = myModel(x, parmsX)
-		#----------------------------------------------------------------------
-		parmsY = [40.0, 78.0, 4.0, 70.0]          # initial estimates of parms
-		zhatY = myModel(y, parmsY)
-		#----------------------------------------------------------------------
-	    # zhatXY = (zhatX * zhatY) / 100.0
-		# zhatXY = (zhatX/22.0 * zhatY/200) * 100.0
-		zhatXY = (zhatX * zhatY)/17.2
-		#----------------------------------------------------------------------
-	end # function myModelXY
-	#--------------------------------------------------------------------------------
-	fs = [myModelXY(x, y) for x in xs for y in ys]
-	#--------------------------------------------------------------------------------
-	Plots.plot(title="3D-Wireframe of ISLR2-Data 'Income2' (cf.Fig.2.3)", legend=:none, windowsize= (600*2.0, 400*2.0))
-	#---------------------------------------------------------------
-	# Plots.wireframe!(xs, ys, fs, legend=:none, xlabel="Education", ylabel="Seniority", zlabel="Income", nx=200, ny=200, camera=(40, 20))
-	#---------------------------------------------------------------
-	Plots.wireframe!(xs, ys, fs, legend=:none, xlabel="Education", ylabel="Seniority", zlabel="Income", nx=200, ny=200, color=:viridis, display_option=Plots.GR.OPTION_SHADED_MESH,  camera=(40, 20))
-    #--------------------------------------------------------------------------
-	annotate!(31, 20, 310, "r(Edu, Sen)=0.19", 15)
-	annotate!(32.5, 15, 295, "p_corr=0.30", 15)
-	#--------------------------------------------------------------------------
+	# (multipleR1, multipleR2,  multipleR3, multipleRsQ1, multipleRsQ2, multipleRsQ2)
 end # let
 
 # ╔═╡ e13cda08-84ec-48c3-ade8-fd61a3c5ac17
@@ -837,7 +700,7 @@ StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
 [compat]
 CSV = "~0.10.9"
 GLM = "~1.8.3"
-HypothesisTests = "~0.10.12"
+HypothesisTests = "~0.10.13"
 LsqFit = "~0.13.0"
 Plots = "~1.38.11"
 StatsPlots = "~0.15.5"
@@ -849,7 +712,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "e2749aece5e310a8e742aa7444396b6969b4f50a"
+project_hash = "a1636ede352b79f841eaced756821acc3456eda0"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -1251,9 +1114,9 @@ version = "0.3.15"
 
 [[deps.HypothesisTests]]
 deps = ["Combinatorics", "Distributions", "LinearAlgebra", "Random", "Rmath", "Roots", "Statistics", "StatsBase"]
-git-tree-sha1 = "3eaee0f574ae7918e0529ed37a2652c6c17d4948"
+git-tree-sha1 = "fee0691e3336a71503dada09ed61bed786b0f59f"
 uuid = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
-version = "0.10.12"
+version = "0.10.13"
 
 [[deps.InlineStrings]]
 deps = ["Parsers"]
@@ -2216,18 +2079,14 @@ version = "1.4.1+0"
 # ╟─467c6c7c-3acc-4919-99d9-4f197a067174
 # ╟─b6dedd81-c882-469d-8bf7-c6abbd8ce724
 # ╟─4ea401b0-4604-4ab1-a5c4-cbdf4dc3195e
-# ╟─19579a86-97ef-4d18-9a71-89fc350571a8
-# ╟─976f54be-4c0f-409b-bf8c-e37d494b472c
-# ╟─2ae93ea8-4106-4ff5-b69d-a5d1847e32aa
-# ╟─3e40aac3-88b2-4b8c-a003-03e7317d107c
-# ╟─6177f953-55a0-43cb-8d37-4990461b946b
-# ╟─98bbe5b4-3811-405f-9965-48885038cac5
-# ╟─60bbd574-5246-4145-819b-f149eedcdcdc
-# ╟─8082f864-ece5-424d-ac92-93ca8f344ced
-# ╟─9bc9fe72-7dee-495e-9e0a-cc86ae653092
-# ╟─e354fade-e1d8-4bd2-8e47-ec4046354c55
-# ╟─9c286327-ffad-41bf-85bf-e843a3cedcf0
-# ╟─f768add3-38aa-40e1-bc95-661f380a817d
+# ╟─2db54260-2d77-40a1-834f-d6d0e4164e44
+# ╟─8beec881-7371-40dc-948d-deb61ad2d99f
+# ╟─55f36e93-0c4e-4eaf-962e-e6ff7cf3e321
+# ╟─fcbbb2c6-55ca-4302-bd7c-638ba47ac9de
+# ╟─cf103b63-ee7e-4970-9f85-b6b9ae72e025
+# ╟─b276aaa9-ee61-444c-a4fa-c09f62f792b8
+# ╟─01cc3ff4-e7a8-4610-b990-088eedbfcd9a
+# ╟─347ae10c-0991-4cd7-b0d2-d87de4b43f17
 # ╟─e13cda08-84ec-48c3-ade8-fd61a3c5ac17
 # ╟─75c6cefe-7be7-4086-a5c6-0e8312b8b6ee
 # ╟─6566d57d-d090-4bed-87e8-be8b516e86e1
