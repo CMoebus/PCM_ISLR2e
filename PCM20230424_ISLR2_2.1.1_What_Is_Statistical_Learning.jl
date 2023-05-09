@@ -553,7 +553,7 @@ From cross-tables and histograms we can see that the rank order in $Income$ is f
 
 So it is a good idea to model the univariate influences by a *nonmonotonic ascending* function. We used linear and nonlinear (sigmoid or logistic) functions. In case of the logistic functions we have the advantage that these are solutions of simple *growth processes* formalized as linear differential equations.
 
-Despite the fact that the frequencies of the two extreme groups $lxly$ and $hxhy$ are higher than in the two other groups the variables $Education$ and $Seniority$ are correlationally *independent*. The corresponding *product-moment correlation* coefficient is $r = 0.19$ (as can be seen above). This is the obligation to construct a nonlinear 3D-regression surface for the multivariate regression model $Income \rightarrow Education \times Seniority$ by multiplying the marginal regression functions of the two marginal nonlinear regression models $Income \rightarrow Education$ and $Income \rightarrow Seniority$.
+Despite the fact that the frequencies of the two extreme groups $lxly$ and $hxhy$ are higher than in the two other groups the variables $Education$ and $Seniority$ are correlationally *independent*. The corresponding *product-moment correlation* coefficient is $r = 0.19$ (as can be seen above). This gives us the opportunity to construct a nonlinear 3D-regression surface for the multivariate regression model $Income \rightarrow Education \times Seniority$ by multiplying the marginal regression functions of the two marginal nonlinear regression models $Income \rightarrow Education$ and $Income \rightarrow Seniority$.
 
 "
 
@@ -660,6 +660,16 @@ let
 	#--------------------------------------------------------------------------------
 	# (multipleR1, multipleR2,  multipleR3, multipleRsQ1, multipleRsQ2, multipleRsQ2)
 end # let
+
+# ╔═╡ c94b50d3-2e18-4f61-921c-ad8d34b28185
+md"
+---
+###### 3.6.5 Comparison of Regression Models 3.6.2-3.6.4 and Interpretation
+
+The *full model* is the the 4-parameter model with interaction term. The other two models are *nested* special cases obtained by *restrictions* on the parameters of the full model. There is a statistical test (*F-test*) to evaluate the increase of the SSE (= sum of error squares) going from the *full* to the *restricted* models. 
+
+Because things are obvious here, we don't need that test. We see  that there are two nested simpler models 3.6.2 and 3.6.3. Model 3.6.2 has nearly the same multiple correlation $R$ between model predictions $\hat{z}$ and criterium $Income$ as the *full* model 3.6.4. We prefer model 3.6.3 over the other two because of parameter parsimony with prediction quality at the same time.
+"
 
 # ╔═╡ e13cda08-84ec-48c3-ade8-fd61a3c5ac17
 md"
@@ -2087,6 +2097,7 @@ version = "1.4.1+0"
 # ╟─b276aaa9-ee61-444c-a4fa-c09f62f792b8
 # ╟─01cc3ff4-e7a8-4610-b990-088eedbfcd9a
 # ╟─347ae10c-0991-4cd7-b0d2-d87de4b43f17
+# ╟─c94b50d3-2e18-4f61-921c-ad8d34b28185
 # ╟─e13cda08-84ec-48c3-ade8-fd61a3c5ac17
 # ╟─75c6cefe-7be7-4086-a5c6-0e8312b8b6ee
 # ╟─6566d57d-d090-4bed-87e8-be8b516e86e1
