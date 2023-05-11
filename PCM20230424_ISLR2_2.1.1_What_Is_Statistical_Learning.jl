@@ -12,7 +12,7 @@ md"
 =====================================================================================
 #### ISLR2_2.1.1 What Is Statistical Learning ?
 ##### file: PCM20230424\_ISLR2\_2.1.1\_What\_Is\_Statistical\_Learning.jl
-##### Julia/Pluto (1.8.5/0.19.14) by PCM *** 2023/05/09 ***
+##### Julia/Pluto (1.8.5/0.19.14) by PCM *** 2023/05/11 ***
 =====================================================================================
 "
 
@@ -29,46 +29,65 @@ advertisingDataFrame = CSV.File("C:/Users/claus/Nextcloud/PCM_Book/PCM2023_ISLR_
 # ╔═╡ f698b886-e349-436f-932d-657bf7ff1eb5
 md"
 ---
-##### 1.2  2D-Plot
+##### 1.2 ISLR2, Fig.2.2
+###### 1.2.1 2D-Plot $Sales \times TV\text{-}Advertising$
 "
 
 # ╔═╡ de0c31cf-a954-41fb-afca-a03cf28364dc
 let
-	Plots.plot(title="TV-Advertising -> Sales (ISLR2e, Fig. 2.1 - left)")
-	Plots.plot!(advertisingDataFrame.TV, advertisingDataFrame.Sales, seriestype=:scatter, label="(x,y)", xlabel="advertisingDataFrame.TV", ylabel="advertisingDataFrame.Sales")
+	rxy = round(cor(advertisingDataFrame.TV, advertisingDataFrame.Sales), digits=3)
+	plot(title="Sales X TV-Advertising (ISLR2e, Fig. 2.1 - left)")
+	plot!(advertisingDataFrame.TV, advertisingDataFrame.Sales, seriestype=:scatter, label="(x,y)", xlabel="advertisingDataFrame.TV", ylabel="advertisingDataFrame.Sales")
+	#-----------------------------------------------------------------------
+	annotate!(45, 20, "r(Sales, TV) = $rxy", 10)
 end # let
 
 # ╔═╡ b852829d-0da2-44db-b7ed-9bf390858882
 md"
 ---
-##### 1.3 Linear Regression Models
+###### 1.2.2 Linear Univariate OLS-Regression Model $f(X)=\beta_0 + \beta_1X_1$
+where $Y=Sales$ and $X_1=TV\text{-}Advertising$
 "
 
 # ╔═╡ 009a4323-0593-4900-b0d9-e2c4fc7a8756
 let
 	ols_lin = lm(@formula(Sales ~ TV), advertisingDataFrame)
 	yHat = predict(ols_lin)
-	Plots.plot(title="TV-Advertising -> Sales (ISLR2e, Fig. 2.1 - left)")
-	Plots.plot!(advertisingDataFrame.TV, advertisingDataFrame.Sales, seriestype=:scatter, label="(x,y)", xlabel="advertisingDataFrame.TV", ylabel="advertisingDataFrame.Sales")
-	Plots.plot!(advertisingDataFrame.TV, yHat, seriestype=:line, width=2, label="(x,y-hat)")
+	plot(title="Sales -> TV-Advertising (ISLR2e, Fig. 2.1 - left)")
+	plot!(advertisingDataFrame.TV, advertisingDataFrame.Sales, seriestype=:scatter, label="(x,y)", xlabel="advertisingDataFrame.TV", ylabel="advertisingDataFrame.Sales")
+	plot!(advertisingDataFrame.TV, yHat, seriestype=:line, width=2, label="(x,y-hat)")
 end # let
+
+# ╔═╡ e08f52e5-6dfc-4efd-8363-cb0e02b98796
+md"
+---
+###### 1.2.3 Linear Univariate OLS-Regression Model $f(X)=\beta_0 + \beta_1X_1$
+where $Y=Sales$ and $X_1=Radio\text{-}Advertising$
+"
 
 # ╔═╡ 4d9fc2b5-3ee4-4acf-be66-d2881f9f994a
 let
 	ols_lin = lm(@formula(Sales ~ Radio), advertisingDataFrame)
 	yHat = predict(ols_lin)
-	Plots.plot(title="Radio-Advertising -> Sales (ISLR2e, Fig. 2.1 - middle)")
-	Plots.plot!(advertisingDataFrame.Radio, advertisingDataFrame.Sales, seriestype=:scatter, label="(x,y)", xlabel="advertisingDataFrame.Radio", ylabel="advertisingDataFrame.Sales")
-	Plots.plot!(advertisingDataFrame.Radio, yHat, seriestype=:line, width=2, label="(x,y-hat)")
+	plot(title="Sales -> Radio-Advertising (ISLR2e, Fig. 2.1 - middle)")
+	plot!(advertisingDataFrame.Radio, advertisingDataFrame.Sales, seriestype=:scatter, label="(x,y)", xlabel="advertisingDataFrame.Radio", ylabel="advertisingDataFrame.Sales")
+	plot!(advertisingDataFrame.Radio, yHat, seriestype=:line, width=2, label="(x,y-hat)")
 end # let
+
+# ╔═╡ fddf7996-2a6c-48db-8ebb-15e6807c216c
+md"
+---
+###### 1.2.4 Linear Univariate OLS-Regression Model $f(X)=\beta_0 + \beta_1X_1$
+where $Y=Sales$ and $X_1=Newspaper\text{-}Advertising$
+"
 
 # ╔═╡ da5a6876-ef9f-4d73-bd3b-1369c70bc103
 let
 	ols_lin = lm(@formula(Sales ~ Newspaper), advertisingDataFrame)
 	yHat = predict(ols_lin)
-	Plots.plot(title="Newsp-Advertising -> Sales (ISLR2e, Fig. 2.1 - right)")
-	Plots.plot!(advertisingDataFrame.Newspaper, advertisingDataFrame.Sales, seriestype=:scatter, label="(x,y)", xlabel="advertisingDataFrame.Newspaper", ylabel="advertisingDataFrame.Sales")
-	Plots.plot!(advertisingDataFrame.Newspaper, yHat, seriestype=:line, width=2, label="(x,y-hat)")
+	plot(title="Sales -> Newsp-Advertising (ISLR2e, Fig. 2.1 - right)")
+	plot!(advertisingDataFrame.Newspaper, advertisingDataFrame.Sales, seriestype=:scatter, label="(x,y)", xlabel="advertisingDataFrame.Newspaper", ylabel="advertisingDataFrame.Sales")
+	plot!(advertisingDataFrame.Newspaper, yHat, seriestype=:line, width=2, label="(x,y-hat)")
 end # let
 
 # ╔═╡ 24576004-b1d2-43e1-a861-eba45d1fda0e
@@ -92,21 +111,25 @@ income1DataFrame = CSV.File("C:/Users/claus/Nextcloud/PCM_Book/PCM2023_ISLR_Data
 md"
 ---
 ##### 2.2 ISLR2, Fig.2.2
-###### 2.2.1 2D-Plot
+###### 2.2.1 2D-Plot $Income \times Education$
 "
 
 # ╔═╡ 7ad28ec0-74ad-4f15-8235-259f091622a6
 let
 	xdata = income1DataFrame.Education
 	ydata = income1DataFrame.Income
-	Plots.plot(title="Income -> Education (ISLR2e, Fig. 2.2 - left)", xlims=(9,23), ylims=(5,95))
-	Plots.plot!(xdata, ydata, seriestype=:scatter, label="(x,y)", xlabel="income1DataFrame.Education", ylabel="income1DataFrame.Income")
+	rxy = round(cor(xdata, ydata), digits=3)
+	plot(title="Income X Education (ISLR2e, Fig. 2.2 - left)", xlims=(9,23), ylims=(5,95))
+	plot!(xdata, ydata, seriestype=:scatter, label="(x,y)", xlabel="income1DataFrame.Education", ylabel="income1DataFrame.Income")
+	#-----------------------------------------------------------------------
+	annotate!(12.5, 70, "r(Income, Education) = $rxy", 10)
 end # let
 
 # ╔═╡ 55a0b4d7-890f-4d32-a10f-002631906bda
 md"
 ---
-###### 2.2.2 Linear Regression Model $f(X)=\beta_0 + \beta_1X_1$
+###### 2.2.2 Linear Univariate OLS-Regression Model $f(X)=\beta_0 + \beta_1X_1$
+where $Y=Income$ and $X_1=Education$
 "
 
 # ╔═╡ bfcdfaf5-50c1-452a-946b-941e5c4c1041
@@ -118,19 +141,23 @@ let
 	yhat = predict(ols_lin)
 	e = residuals(ols_lin)
 	sse = round(e'e, digits=2)
+	multipleR = round(cor(ydata, yhat), digits=3)
+	multipleRsQ = round(multipleR^2, digits=3)
 	#--------------------------------------------------------------------------------
-	Plots.plot(title="Income -> Education (ISLR2e, Fig. 2.2 - (new))", xlims=(9,23), ylims=(5,95))
-	Plots.plot!(xdata, ydata, seriestype=:scatter, label="(x,y)", xlabel="income1DataFrame.Education", ylabel="income1DataFrame.Income")
-	Plots.plot!(xdata, yhat, seriestype=:line, width=2, label="(x,yhat)")
-	Plots.plot!(map(((x, y, yh) -> ([x, x],[y, yh])), xdata, ydata, yhat), label="")
+	plot(title="Income -> Education (ISLR2e, cf. Fig. 2.2)", xlims=(9,23), ylims=(5,95))
+	plot!(xdata, ydata, seriestype=:scatter, label="(x,y)", xlabel="income1DataFrame.Education", ylabel="income1DataFrame.Income")
+	plot!(xdata, yhat, seriestype=:line, width=2, label="(x,yhat)")
+	plot!(map(((x, y, yh) -> ([x, x],[y, yh])), xdata, ydata, yhat), label="")
 	#--------------------------------------------------------------------------------
-	annotate!((19.2,22,"SSE = $sse ( = error sum of squares)", 10))
+	annotate!((19.9,28,"multiple R = $multipleR (= r(y,yhat))", 10))
+	annotate!((19.3,22,"multiple R^2 = $multipleRsQ (= r(y,yhat)^2)", 10))
+	annotate!((19.2,16,"SSE = $sse (= error sum of squares)", 10))
 end # let
 
 # ╔═╡ 5479bd68-aafa-47c6-bce5-d5a8817c131a
 md"
 ---
-###### 2.2.3 Nonlinear Regression Model using the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
+###### 2.2.3 Nonlinear Univariate OLS-Regression with the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
 
 $f(x) = L + (U-L) \cdot \frac{1}{1+e^{-k\left(x - x_{k_{max}}\right)}}$
 
@@ -164,17 +191,21 @@ let
 	k  = round(parms_hat[3], digits=2)                    # max. growth rate k
 	x_k_max = round(parms_hat[4], digits=2)               # point x of k_max
 	yhat = myModel(xdata, parms_hat)
+	multipleR = round(cor(ydata, yhat), digits=3)
+	multipleRsQ = round(multipleR^2, digits=3)
 	#--------------------------------------------------------------------------------
 	Plots.plot(title="Income -> Education (ISLR2e, Fig. 2.2 - right)", xlims=(9,23), ylims=(5,95))
 	Plots.plot!(xdata, ydata, seriestype=:scatter, xlabel="income1DataFrame.Education", ylabel="income1DataFrame.Income", label="(x,y)")
 	Plots.plot!(xdata, yhat, seriestype=:line, label="(x,yhat)", w=2)
 	Plots.plot!(map(((x, y, yh) -> ([x, x],[y, yh])), xdata, ydata, yhat), label="")
 	#--------------------------------------------------------------------------------
-	annotate!((21.4,40,"x_k_max = $x_k_max", 10))
-	annotate!((19.4,34,"U=$U (= Upper (right) asymptote)", 10))
-	annotate!((19.6,28,"L=$L (= Lower (left) asymptote)", 10))
-	annotate!((19.2,22,"SSE = $sse ( = error sum of squares)", 10))
-	annotate!((17.45,16,"k=$k (= max. growth rate of standard logistic function)", 10))
+	annotate!((19.9,28,"multiple R = $multipleR (= r(y,yhat))", 10))
+	annotate!((19.3,22,"multiple R^2 = $multipleRsQ (= r(y,yhat)^2)", 10))
+	annotate!((21.4,46,"x_k_max = $x_k_max", 10))
+	annotate!((19.4,40,"U=$U (= Upper (right) asymptote)", 10))
+	annotate!((19.6,34,"L=$L (= Lower (left) asymptote)", 10))
+	annotate!((19.2,16,"SSE = $sse ( = error sum of squares)", 10))
+	annotate!((17.45,10,"k=$k (= max. growth rate of standard logistic function)", 10))
 	#--------------------------------------------------------------------------------
 end # let
 
@@ -206,47 +237,55 @@ income2DataFrame = CSV.File("C:/Users/claus/Nextcloud/PCM_Book/PCM2023_ISLR_Data
 # ╔═╡ c54e5513-f30a-4bc1-afe0-102ba43a6f87
 md"
 ---
-##### 3.2 ISLR2, Fig.2.3 $Income \rightarrow Education$
-###### 3.2.1 2D-Plot
+##### 3.2 ISLR2, Figs. 2.3 - 2.6 $Income \rightarrow Education$
+###### 3.2.1 2D-Plot $Income \times Education$
 " 
 
 # ╔═╡ a559d47a-bdf9-4229-b363-d33ff4994de6
 let
 	xdata = income2DataFrame.Education
 	ydata = income2DataFrame.Income
-	Plots.plot(title="Income -> Education (ISLR2e, Fig. 2.3 - (new))", xlims=(9,22), ylims=(5,120))
-	Plots.plot!(xdata, ydata, seriestype=:scatter, label="(x,y)", xlabel="income2DataFrame.Education", ylabel="income2DataFrame.Income")
+	rxy = round(cor(xdata, ydata), digits=3)
+	plot(title="Income X Education (ISLR2e, cf. Fig. 2.3)", xlims=(9,22), ylims=(5,120))
+	plot!(xdata, ydata, seriestype=:scatter, label="(x,y)", xlabel="income2DataFrame.Education", ylabel="income2DataFrame.Income")
+	#-----------------------------------------------------------------------
+	annotate!(12.5, 90, "r(Income, Education) = $rxy", 10)
 end # let
 
 # ╔═╡ a0e54499-eb79-4381-81eb-acfd8826511e
 md"
 ---
-###### 3.2.2 Linear Regression Model $f(X)=\beta_0 + \beta_1X_1$
+###### 3.2.2 Linear Univariate Regression Model $f(X)=\beta_0 + \beta_1X_1$
+where $Y=Income$ and $X_1=Education.$
 "
 
-# ╔═╡ 314821cf-1739-454e-a6eb-75b3bed752b3
+# ╔═╡ 7be41329-e7b8-4647-8eb3-a791f8669f50
 let
 	xdata = income2DataFrame.Education
-	ydata = income2DataFrame.Income
+	zdata  = income2DataFrame.Income
 	#--------------------------------------------------------------------------------
-	ols_lin = lm(@formula(Income ~ 1 + Education), income2DataFrame)
-	yhat = predict(ols_lin)
-	e    = residuals(ols_lin)
-	sse  = round(e'e, digits=2)
+	ols_linX = lm(@formula(Income ~ 1 + Education), income2DataFrame)
+	zhat   = predict(ols_linX)
+	eX    = residuals(ols_linX)
+	sseX  = round(eX'eX, digits=2)
+	multipleR = round(cor(zdata, zhat), digits=3)
+	multipleRsQ = round(multipleR^2, digits=3)
 	#--------------------------------------------------------------------------------
-	Plots.plot(title="Linear OLS: Income -> Education (ISLR2e, cf. Fig.2.3)", xlims=(9,22), ylims=(5,120))
-	Plots.plot!(xdata, ydata, seriestype=:scatter, label="(x,y)", xlabel="income2DataFrame.Education", ylabel="income2DataFrame.Income")
-	Plots.plot!(xdata, yhat, seriestype=:line, width=2, label="(x,yhat)")
-	Plots.plot!(map(((x, y, yh) -> ([x, x],[y, yh])), xdata, ydata, yhat), label="")
+	plot(title="Linear OLS: Income -> Education (ISLR2e, cf. Fig.2.3)", xlims=(9,22), ylims=(5,120))
+	plot!(xdata, zdata, seriestype=:scatter, label="(x,z)", xlabel="income2DataFrame.Education", ylabel="income2DataFrame.Income")
+	plot!(xdata, zhat, seriestype=:line, width=2, label="(x,zhat)")
+	plot!(map(((x, z, zh) -> ([x, x],[z, zh])), xdata, zdata, zhat), label="")
 	#--------------------------------------------------------------------------------
-	annotate!((18.4,22,"SSE = $sse ( = error sum of squares)", 10))
+	annotate!((20.45,34,"multiple R = $multipleR", 10))
+	annotate!((20.15,28,"multiple R^2 = $multipleRsQ", 10))
+	annotate!((18.4,22,"SSE = $sseX ( = error sum of squares)", 10))
 	#--------------------------------------------------------------------------------
 end # let
 
 # ╔═╡ d1982304-7008-4486-a16d-5d4064935ebc
 md"
 ---
-###### 3.2.3 Nonlinear Regression Models using the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
+###### 3.2.3 Nonlinear Univariate OLS-Regressions using the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
 
 $f(x) = L + (U-L) \cdot \frac{1}{1+e^{-k\left(x - x_{k_{max}}\right)}}$
 
@@ -268,32 +307,36 @@ $\;$
 $\;$
 
 
-
 "
 
-# ╔═╡ 09af8231-726f-4439-b123-a14170b5170e
+# ╔═╡ 8ad1be9a-ffdd-4c43-b6ff-edd49550b6d2
 let
 	xdata = income2DataFrame.Education
-	ydata = income2DataFrame.Income
+	zdata = income2DataFrame.Income
 	#--------------------------------------------------------------------------------
 	myModel(x, p) = p[1] .+ (p[2]-p[1]) .* (1 ./ ((1 .+ exp.(-p[3] .* (x .- p[4])))))
-	parms0 = [28.0, 88.0, 0.9, 16.0]                    # initial estimates of parms
+	parms0 = [28.0, 88.0, 0.9, 16.0]                      # initial estimates of parms
 	myModel(xdata, parms0)
-	fit = curve_fit(myModel, xdata, ydata, parms0)
-	e = fit.resid
-	sse = round(e'e, digits=2)
+	fit = curve_fit(myModel, xdata, zdata, parms0)
 	parms_hat = coef(fit)
+	zhat  = myModel(xdata, parms_hat)
+	e   = fit.resid
+	sse = round(e'e, digits=2)
+	multipleR = round(cor(zdata, zhat), digits=3)
+	multipleRsQ = round(multipleR^2, digits=3)
+	#--------------------------------------------------------------------------------
 	L  = round(parms_hat[1], digits=2)                    # greatest Lower bound (gLb)
 	U  = round(parms_hat[2], digits=2)                    # least Upper bound (lUb)
 	k  = round(parms_hat[3], digits=2)                    # max. growth rate k
 	x_k_max = round(parms_hat[4], digits=2)               # point x of k_max
-	yhat = myModel(xdata, parms_hat)
 	#--------------------------------------------------------------------------------
-	Plots.plot(title="Logistic OLS: Income -> Education (ISLR2e, cf.Fig.2.3)", xlims=(9,22), ylims=(5,120))
-	Plots.plot!(xdata, ydata, seriestype=:scatter, label="(x,y)", xlabel="income2DataFrame.Education", ylabel="income2DataFrame.Income")
-	Plots.plot!(xdata, yhat, seriestype=:line, label="(x,yhat)", w=2)
-	Plots.plot!(map(((x, y, yh) -> ([x, x],[y, yh])), xdata, ydata, yhat), label="")
+	plot(title="Logistic OLS: Income -> Education (ISLR2e, cf.Fig.2.3)", xlims=(9,22), ylims=(5,120))
+	plot!(xdata, zdata, seriestype=:scatter, label="(x,z)", xlabel="income2DataFrame.Education", ylabel="income2DataFrame.Income")
+	plot!(xdata, zhat, seriestype=:line, label="(x,zhat)", w=2)
+	plot!(map(((x, z, zh) -> ([x, x],[z, zh])), xdata, zdata, zhat), label="")
 	#--------------------------------------------------------------------------------
+	annotate!((11.5, 92,"multiple R = $multipleR", 10))
+	annotate!((11.14, 86,"multiple R^2 = $multipleRsQ", 10))
 	annotate!((20.55,46,"x_k_max = $x_k_max", 10))
 	annotate!((19.5,40,"k=$k (= max. growth rate)", 10))
 	annotate!((18.7,34,"U=$U (= Upper (right) asymptote)", 10))
@@ -307,39 +350,43 @@ end # let
 md"
 ---
 ##### 3.3 ISLR2, Fig.2.3 $Income \rightarrow Seniority$
-###### 3.3.1 2D-Plot
+###### 3.3.1 2D-Plot $Income \times Seniority$
 "
 
 # ╔═╡ 8e78b3e0-e97e-4b8d-9342-a180b26bbf03
 let
 	xdata = income2DataFrame.Seniority
 	ydata = income2DataFrame.Income
+	rxy = round(cor(xdata, ydata), digits=3)
 	#--------------------------------------------------------------------------------
-	Plots.plot(title="Income -> Seniority (ISLR2e, Fig. 2.3 - (new))", xlims=(9,200), ylims=(5,125))
-	Plots.plot!(xdata, ydata, seriestype=:scatter, label="(x,y)", xlabel="income2DataFrame.Seniority", ylabel="income2DataFrame.Income")
+	plot(title="Income X Seniority (ISLR2e, cf. Fig. 2.3)", xlims=(9,200), ylims=(5,125))
+	plot!(xdata, ydata, seriestype=:scatter, label="(y,z)", 	
+	xlabel="income2DataFrame.Seniority", ylabel="income2DataFrame.Income")
 	#--------------------------------------------------------------------------------
+	annotate!(55, 105, "r(Income, Education) = $rxy", 10)
 end # let
 
 # ╔═╡ 2771a9f1-353f-4bfa-b4d9-a0deda6e031a
 md"
 ---
-###### 3.3.2 Linear Regression Model $f(X)=\beta_0 + \beta_1X_1$
+###### 3.3.2 Linear Univariate OLS-Regression Model $f(X)=\beta_0 + \beta_2X_2$
+where $Y=Income$ and $X_2=Seniority.$
 "
 
 # ╔═╡ 84c06bd1-4dbf-411f-96c4-97554146ca21
 let
-	xdata = income2DataFrame.Seniority
-	ydata = income2DataFrame.Income
+	ydata = income2DataFrame.Seniority
+	zdata = income2DataFrame.Income
 	#--------------------------------------------------------------------------------
 	ols_lin = lm(@formula(Income ~ 1 + Seniority), income2DataFrame)
-	yhat = predict(ols_lin)
+	zhat = predict(ols_lin)
 	e    = residuals(ols_lin)
 	sse  = round(e'e, digits=2)
 	#--------------------------------------------------------------------------------
-	Plots.plot(title="Linear OLS: Income -> Seniority (ISLR2e, cf. Fig.2.3)", xlims=(9,200), ylims=(5,125))
-	Plots.plot!(xdata, ydata, seriestype=:scatter, label="(x,y)", xlabel="income2DataFrame.Seniority", ylabel="income2DataFrame.Income")
-	Plots.plot!(xdata, yhat, seriestype=:line, width=2, label="(x,yhat)")
-	Plots.plot!(map(((x, y, yh) -> ([x, x],[y, yh])), xdata, ydata, yhat), label="")
+	plot(title="Linear OLS: Income -> Seniority (ISLR2e, cf. Fig.2.3)", xlims=(9,200), ylims=(5,125))
+	plot!(ydata, zdata, seriestype=:scatter, label="(y,z)", xlabel="income2DataFrame.Seniority", ylabel="income2DataFrame.Income")
+	plot!(ydata, zhat, seriestype=:line, width=2, label="(y,zhat)")
+	plot!(map(((y, z, zh) -> ([y, y],[z, zh])), ydata, zdata, zhat), label="")
 	#--------------------------------------------------------------------------------
 	annotate!((140,15,"SSE = $sse ( = error sum of squares)", 10))
 end # let
@@ -347,7 +394,7 @@ end # let
 # ╔═╡ baa67da7-d394-4a1d-9eee-3a982c0f74c2
 md"
 ---
-###### 3.3.3 Nonlinear Regression Model using the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
+###### 3.3.3 Nonlinear Univariate Regression using the [Generalized Logistic Function](https://en.wikipedia.org/wiki/Generalised_logistic_function)
 
 $f(x) = L + \frac{U-L}{1+e^{-k\left(x - x_{k_{max}}\right)}}$
 
@@ -371,31 +418,36 @@ $\;$
 
 # ╔═╡ f3025a7a-0256-46c7-b296-4cc3a36c5372
 let
-	xdata = income2DataFrame.Seniority
-	ydata = income2DataFrame.Income
+	ydata = income2DataFrame.Seniority
+	zdata = income2DataFrame.Income
 	#------------------------------------------------------------------------------
 	myModel(x, p) = p[1] .+ (p[2] .-p[1]) ./((1 .+ exp.(-p[3] .*(x .- p[4]))))
 	parms0 = [40.0, 78.0, 4.0, 70.0]                      # initial estimates of parms
-	myModel(xdata, parms0)
-	fit = curve_fit(myModel, xdata, ydata, parms0)
+	myModel(ydata, parms0)
+	fit = curve_fit(myModel, ydata, zdata, parms0)
 	e = fit.resid
 	sse = round(e'e, digits=2)
-	parms_hat = coef(fit)
-	L  = round(parms_hat[1], digits=2)                    # greatest Lower bound (gLb)
-	U  = round(parms_hat[2], digits=2)                    # least Upper bound (lUb)
-	k  = round(parms_hat[3], digits=2)                    # max. growth rate k
-	x_k_max = round(parms_hat[4], digits=2)               # point x of k_max
-	yhat = myModel(xdata, parms_hat)
+	parmsY_hat = coef(fit)
+	zhat = myModel(ydata, parmsY_hat)
+	multipleR = round(cor(zdata, zhat), digits=3)
+	multipleRsQ = round(multipleR^2, digits=3)
+	#--------------------------------------------------------------------------------
+	L  = round(parmsY_hat[1], digits=2)                  # greatest Lower bound (gLb)
+	U  = round(parmsY_hat[2], digits=2)                  # least Upper bound (lUb)
+	k  = round(parmsY_hat[3], digits=2)                  # max. growth rate k
+	y_k_max = round(parmsY_hat[4], digits=2)             # point x of k_max
 	#------------------------------------------------------------------------------
-	Plots.plot(title="Logistic OLS: Income -> Seniority (ISLR2e, cf. Fig.2.3)", xlims=(9,200), ylims=(5,125))
-	Plots.plot!(xdata, ydata, seriestype=:scatter, label="(x,y)", xlabel="income2DataFrame.Seniority", ylabel="income2DataFrame.Income")
-	Plots.plot!(xdata, yhat, seriestype=:line, label="(x,yhat)", w=2)
-	Plots.plot!(map(((x, y, yh) -> ([x, x],[y, yh])), xdata, ydata, yhat), label="")
+	plot(title="Logistic OLS: Income -> Seniority (ISLR2e, cf. Fig.2.3)", xlims=(9,200), ylims=(5,125))
+	plot!(ydata, zdata, seriestype=:scatter, label="(y,z)", xlabel="income2DataFrame.Seniority", ylabel="income2DataFrame.Income")
+	plot!(ydata, zhat, seriestype=:line, label="(y,zhat)", w=2)
+	plot!(map(((y, z, zh) -> ([y, y],[z, zh])), ydata, zdata, zhat), label="")
 	#------------------------------------------------------------------------------
-	annotate!((152.7,30,"U=$U (= Upper (right) asymptote)", 10))
-	annotate!((155.0,24,"L=$L (= Lower (left) asymptote)", 10))
-	annotate!((146.4,18,"SSE = $sse ( = error sum of squares)", 10))
-	annotate!((127.2,12,"k=$k (= max. growth rate of standard logistic function)", 10))
+	annotate!((50.0, 98,"multiple R = $multipleR", 10))
+	annotate!((46.14,92,"multiple R^2 = $multipleRsQ", 10))
+	annotate!((155.0,30,"Ly=$L (= Lower (left) asymptote)", 10))
+	annotate!((152.4,24,"Uy=$U (= Upper (right) asymptote)", 10))
+	annotate!((147.9,18,"sseY=$sse ( = error sum of squares)", 10))
+	annotate!((127.2,12,"ky=$k (= max. growth rate of standard logistic function)", 10))
 	#------------------------------------------------------------------------------
 end # let
 
@@ -403,7 +455,7 @@ end # let
 md"
 ---
 ##### 3.4 ISLR2, Fig.2.3 $Education \times Seniority$
-###### 3.4.1 2D-Plot
+###### 3.4.1 2D-Plot $Education \times Seniority$
 "
 
 # ╔═╡ f98e88e4-6abf-41c6-86c4-60f61523e1bb
@@ -411,13 +463,16 @@ let
 	#-------------------------------------------------------------------------------
 	xs = income2DataFrame.Education
 	ys = income2DataFrame.Seniority
+	rxy = round(cor(xs, ys), digits=3)
 	#-------------------------------------------------------------------------------
-	plot(xs, ys, title="Income2 Data: Split at Inflection Points of Rate k", seriestype=:scatter, legend=:none, xlabel="Education", ylabel="Seniority")
+	plot(title="Income2 Data: Split at Inflection Points of Rate k", xlabel="Education", ylabel="Seniority")
+	plot!(xs, ys, seriestype=:scatter, label="(x,y)")
 	plot!([(16.0, 0),  (16, 220)])                # vertical line at x_k_max = 16
 	plot!([( 9.5, 70), (22,  70)])                # horizontal line at y_k_max = 70
 	#-------------------------------------------------------------------------------
 	annotate!(20.7,  60, "y_k_max=70", 10)
 	annotate!(14.7, 210, "x_k_max=16", 10)
+	annotate!(12.4, 165, "r(Education, Seniority) = $rxy", 10)
 	#-------------------------------------------------------------------------------
 end # let
 
@@ -561,7 +616,7 @@ Despite the fact that the frequencies of the two extreme groups $lxly$ and $hxhy
 md"
 ---
 ##### 3.6 ISLR2, Fig.2.3 $Income \rightarrow Education \times Seniority$
-###### 3.6.1 3D Plot
+###### 3.6.1 3D Plot $Income \times Education \times Seniority$
 "
 
 # ╔═╡ 8beec881-7371-40dc-948d-deb61ad2d99f
@@ -572,16 +627,17 @@ let
 	zs = income2DataFrame.Income
 	#--------------------------------------------------------------------------------
 	plot(title="Income X Education X Seniority (ISLR2e, Fig. 2.3 - (new))", xlims=(10,20), ylims=(25,180), zlims=(0,100), windowsize=(600*2, 400*2))
-	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(40,30))
+	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(10,10))              # camera(horizontal, vertical)
 	#--------------------------------------------------------------------------------
 end # let
 
 # ╔═╡ 55f36e93-0c4e-4eaf-962e-e6ff7cf3e321
 md"
 ---
-###### 3.6.2 Multiple Linear Regression $Income \rightarrow Education + Seniority$
+###### 3.6.2 Linear Multiple OLS-Regression $f(X)=\beta_0 + \beta_1X_1 + \beta_2X_2$
+where $Y=Income, X_1=Education$, and $X_2=Seniority$ 
 
-This model has $3$ parameters.
+This model has $3$ parameters $\beta_0, \beta_1, \beta_2$.
 "
 
 # ╔═╡ fcbbb2c6-55ca-4302-bd7c-638ba47ac9de
@@ -591,24 +647,28 @@ let
 	ys = income2DataFrame.Seniority
 	zs = income2DataFrame.Income
 	#--------------------------------------------------------------------------------
-	ols_lin1 = lm(@formula(Income ~ 1 + Education + Seniority), income2DataFrame)
-	zhat1 = predict(ols_lin1)
-	multipleR1   = round(cor(zs, zhat1), digits=4)
-	multipleRsQ1 = multipleR1^2
+	ols_lin = lm(@formula(Income ~ 1 + Education + Seniority), income2DataFrame)
+	zhat = predict(ols_lin)
+	multipleR   = round(cor(zs, zhat), digits=3)
+	multipleRsQ = round(multipleR^2, digits=3)
 	#--------------------------------------------------------------------------------
-	plot(title="Linear Regression: Income -> Education + Seniority (ISLR2e, Fig. 2.3 - (new))", xlims=(10,20), ylims=(25,180), zlims=(0,100), windowsize=(600*2, 400*2))
-	plot!(map((x, y, z, zh) -> ([x, x], [y, y], [z, zh]), xs, ys, zs, zhat1), label="", linewidth=3)
-	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(40,30))
-	plot!(xs, ys, zhat1, seriestype=:surface, color=:viridis, legend=:none, colorbar=false, alpha=0.5)
-	annotate!(22,160,0, "multiple R = $multipleR1")
+	plot(title="Linear Regression: Income -> Education + Seniority (ISLR2e, cf. Fig. 2.3)", xlims=(10,20), ylims=(25,180), zlims=(0,100), windowsize=(600*2, 400*2))
+	plot!(map((x, y, z, zh) -> ([x, x], [y, y], [z, zh]), xs, ys, zs, zhat), label="", linewidth=3)
+	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(10,10))          # camera(horizontal, vertical)
+	plot!(xs, ys, zhat, seriestype=:surface, color=:viridis, legend=:none, colorbar=false, alpha=0.5)
+	#--------------------------------------------------------------------------------
+	annotate!(12,160,90, "multiple R = $multipleR")
+	annotate!(11.6,160,84, "multiple R^2 = $multipleRsQ")
 	#--------------------------------------------------------------------------------
 end # let
 
 # ╔═╡ cf103b63-ee7e-4970-9f85-b6b9ae72e025
 md"
 ---
-###### 3.6.3 Single Prediction Linear Regression $Income \rightarrow (Education \cdot Seniority)$
-This model has $2$ parameters.
+###### 3.6.3 Linear Univariate Regression $f(X)=\beta_0 + \beta_1(X_1 \cdot X_2)$
+where $Y=Income, X_1=Education$, and $X_2=Seniority$ 
+
+This model has $2$ parameters $\beta_0, \beta_1$.
 "
 
 # ╔═╡ b276aaa9-ee61-444c-a4fa-c09f62f792b8
@@ -618,26 +678,29 @@ let
 	ys = income2DataFrame.Seniority
 	zs = income2DataFrame.Income
 	#--------------------------------------------------------------------------------
-	ols_lin2 = lm(@formula(Income ~ 1 + Education&Seniority), income2DataFrame)
-	zhat2 = predict(ols_lin2)
-	multipleR2   = round(cor(zs, zhat2), digits=4)
-	multipleRsQ2 = multipleR2^2
+	ols_lin = lm(@formula(Income ~ 1 + Education & Seniority), income2DataFrame)
+	zhat = predict(ols_lin)
+	multipleR   = round(cor(zs, zhat), digits=3)
+	multipleRsQ = round(multipleR^2, digits=3)
 	#--------------------------------------------------------------------------------
-	plot(title="Linear Regression: Income -> (Education * Seniority) (ISLR2e, Fig. 2.3 - (new))", xlims=(10,20), ylims=(25,180), zlims=(0,100), windowsize=(600*2, 400*2))
-	plot!(map((x, y, z, zh) -> ([x, x], [y, y], [z, zh]), xs, ys, zs, zhat2), label="", linewidth=3)
-	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(40,30))
-	plot!(xs, ys, zhat2, seriestype=:surface, color=:viridis, legend=:none, colorbar=false, alpha=0.5)
-	annotate!(22,160,0, "multiple R = $multipleR2")
+	plot(title="Linear Regression: Income -> (Education & Seniority) (ISLR2e, cf. Fig. 2.3)", xlims=(10,20), ylims=(25,180), zlims=(0,100), windowsize=(600*2, 400*2))
+	plot!(map((x, y, z, zh) -> ([x, x], [y, y], [z, zh]), xs, ys, zs, zhat), label="", linewidth=3)
+	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(10,10))          # camera(horizontal, vertical)
+	plot!(xs, ys, zhat, seriestype=:surface, color=:viridis, legend=:none, colorbar=false, alpha=0.5)
 	#--------------------------------------------------------------------------------
-	# (multipleR1, multipleR2,  multipleR3, multipleRsQ1, multipleRsQ2, multipleRsQ2)
+	annotate!(22,160,40, "multiple R = $multipleR")
+	annotate!(21.6,160,34, "multiple R^2 = $multipleRsQ")
+	#--------------------------------------------------------------------------------
 end # let
 
 # ╔═╡ 01cc3ff4-e7a8-4610-b990-088eedbfcd9a
 md"
 ---
-###### 3.6.4 Multiple Lin. Regression $Income \rightarrow Education, Seniority,(Education \cdot Seniority)$
+###### 3.6.4 Linear Multiple Regression $f(X)=\beta_0 + \beta_1X_1 + \beta_2 X_2 + \beta_3(X_1 \cdot X_2)$
+where $Y=Income, X_1=Education$, and $X_2=Seniority$ 
 
-This model has $4$ parameters: constant, one weight for each predictor plus one weight for the interaction term.
+This model has $4$ parameters $\beta_0, \beta_1, \beta_2, \beta_3$.
+
 "
 
 # ╔═╡ 347ae10c-0991-4cd7-b0d2-d87de4b43f17
@@ -647,18 +710,19 @@ let
 	ys = income2DataFrame.Seniority
 	zs = income2DataFrame.Income
 	#--------------------------------------------------------------------------------
-	ols_lin3 = lm(@formula(Income ~ 1 + Education*Seniority), income2DataFrame)
-	zhat3 = predict(ols_lin3)
-	multipleR3   = round(cor(zs, zhat3), digits=4)
-	multipleRsQ3 = multipleR3^2
+	ols_lin = lm(@formula(Income ~ 1 + Education * Seniority), income2DataFrame)
+	zhat = predict(ols_lin)
+	multipleR   = round(cor(zs, zhat), digits=3)
+	multipleRsQ = round(multipleR^2, digits=3)
 	#--------------------------------------------------------------------------------
-	plot(title="Multiple Lin. Regression: Income -> f(Education, Seniority, Education * Seniority) (ISLR2e, Fig. 2.3 - (new))", xlims=(10,20), ylims=(25,180), zlims=(0,100), windowsize=(600*2, 400*2))
-	plot!(map((x, y, z, zh) -> ([x, x], [y, y], [z, zh]), xs, ys, zs, zhat3), label="", linewidth=3)
-	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(40,30))
-	plot!(xs, ys, zhat3, seriestype=:surface, color=:viridis, legend=:none, colorbar=false, alpha=0.5)
-	annotate!(22,160,0, "multiple R = $multipleR3")
+	plot(title="Linear Multiple Regression: Income -> f(Education, Seniority, Education * Seniority) (ISLR2e, cf.Fig.2.3)", xlims=(10,20), ylims=(25,180), zlims=(0,100), windowsize=(600*2, 400*2))
+	plot!(map((x, y, z, zh) -> ([x, x], [y, y], [z, zh]), xs, ys, zs, zhat), label="", linewidth=3)
+	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(10,10))
+	plot!(xs, ys, zhat, seriestype=:surface, color=:viridis, legend=:none, colorbar=false, alpha=0.5)
 	#--------------------------------------------------------------------------------
-	# (multipleR1, multipleR2,  multipleR3, multipleRsQ1, multipleRsQ2, multipleRsQ2)
+	annotate!(22,160,40, "multiple R = $multipleR")
+	annotate!(21.6,160,34, "multiple R^2 = $multipleRsQ")
+	#--------------------------------------------------------------------------------
 end # let
 
 # ╔═╡ c94b50d3-2e18-4f61-921c-ad8d34b28185
@@ -668,7 +732,7 @@ md"
 
 The *full model* is the the 4-parameter model with interaction term. The other two models are *nested* special cases obtained by *restrictions* on the parameters of the full model. There is a statistical test (*F-test*) to evaluate the increase of the SSE (= sum of error squares) going from the *full* to the *restricted* models. 
 
-Because things are obvious here, we don't need that test. We see  that there are two nested simpler models 3.6.2 and 3.6.3. Model 3.6.2 has nearly the same multiple correlation $R$ between model predictions $\hat{z}$ and criterium $Income$ as the *full* model 3.6.4. We prefer model 3.6.3 over the other two because of parameter parsimony with prediction quality at the same time.
+Because things are obvious here, we don't need that test. We see  that there are two nested simpler models 3.6.2 and 3.6.3. Model 3.6.2 has nearly the *same* multiple correlation $R$ between model predictions $\hat{z}$ and criterium $Income$ as the *full* model 3.6.4. We prefer model 3.6.2 over the other two because of parameter *parsimony* with respect to prediction *accuracy* at the same time.
 "
 
 # ╔═╡ e13cda08-84ec-48c3-ade8-fd61a3c5ac17
@@ -2054,7 +2118,9 @@ version = "1.4.1+0"
 # ╟─de0c31cf-a954-41fb-afca-a03cf28364dc
 # ╟─b852829d-0da2-44db-b7ed-9bf390858882
 # ╟─009a4323-0593-4900-b0d9-e2c4fc7a8756
+# ╟─e08f52e5-6dfc-4efd-8363-cb0e02b98796
 # ╟─4d9fc2b5-3ee4-4acf-be66-d2881f9f994a
+# ╟─fddf7996-2a6c-48db-8ebb-15e6807c216c
 # ╟─da5a6876-ef9f-4d73-bd3b-1369c70bc103
 # ╟─24576004-b1d2-43e1-a861-eba45d1fda0e
 # ╟─1feee341-401b-4afd-8970-7c2804fc3f89
@@ -2071,9 +2137,9 @@ version = "1.4.1+0"
 # ╟─c54e5513-f30a-4bc1-afe0-102ba43a6f87
 # ╟─a559d47a-bdf9-4229-b363-d33ff4994de6
 # ╟─a0e54499-eb79-4381-81eb-acfd8826511e
-# ╟─314821cf-1739-454e-a6eb-75b3bed752b3
+# ╟─7be41329-e7b8-4647-8eb3-a791f8669f50
 # ╟─d1982304-7008-4486-a16d-5d4064935ebc
-# ╟─09af8231-726f-4439-b123-a14170b5170e
+# ╟─8ad1be9a-ffdd-4c43-b6ff-edd49550b6d2
 # ╟─df58736c-ebd1-4020-915c-b32291985f3f
 # ╟─8e78b3e0-e97e-4b8d-9342-a180b26bbf03
 # ╟─2771a9f1-353f-4bfa-b4d9-a0deda6e031a
