@@ -154,36 +154,36 @@ end # let
 # ╔═╡ 49300f6a-82dc-47b7-a502-871b42529dd9
 md"
 ---
-##### 3.7 Two-Phase Nonlinear OLS-Regression Models
-In the *first* phase we *reuse* the nonlinear univariate OLS-regressions 3.2.3 and 3.3.3 and generate *predictions* 
+##### 3.7 Two-Step Nonlinear-Linear Multiple OLS-Regression Models
+We use a *two-step* modeling approach. That reduces the total computational costs. In the *first* step we *reuse* the nonlinear univariate OLS-regressions 3.2.3 and 3.3.3 and generate *predictions* 
 
-$\hat{z}(x) = \hat{I}(E) = \text{ predicted Income on basis of Education},$ 
+$\hat{I}_{sigmoid}(E) = \text{ predicted }\textit{Income}\text{ on basis of }\textit{Education},$ 
 
 $\;$
 
-$\hat{z}(y) = \hat{I}(S) = \text{ predicted Income on basis of Education}.$
+$\hat{I}_{sigmoid}(S) = \text{ predicted }\textit{Income}\text{ on basis of }\textit{Seniority}.$
 
 $\;$ 
 
 $\;$
 
-In the *second* phase we plug in these predictions into *linear multiple* OLS-regression models:
+In the *second* step we plug in these predictions into *linear multiple* OLS-regression models:
 
 $\;$
 
-$f_1(X, Y) = \beta_0 + \beta_1X + \beta_2Y + \beta_3XY$
+$E_1(X, Y) = \beta_0 + \beta_1X + \beta_2Y + \beta_3XY$
 
 $\;$
 
-$f_2(X, Y) = \beta_0 + \beta_1X + \beta_2Y$
+$E_2(X, Y) = \beta_0 + \beta_1X + \beta_2Y$
 
 $\;$
 
-$f_3(X, Y) = \beta_0 + \beta_3XY$
+$E_3(X, Y) = \beta_0 + \beta_3XY$
 
 $\;$
 
-where $X = \hat{z}(x)$ and $Y = \hat{z}(y).$
+where $X = \hat{I}_{sigmoid}(E)$ and $Y = \hat{I}_{sigmoid}(S).$
 
 $\;$
 
@@ -211,7 +211,7 @@ end # let
 md"
 ---
 ###### 3.7.2 Linear Multiple OLS-Regression with 4-Parameters 
-$f_1(\hat{z}(X), \hat{z}(Y)) = \beta_0 + \beta_1\hat{z}(X) + \beta_2\hat{z}(Y) + \beta_3\hat{z}(X)\hat{z}(Y)$
+$E_1(\hat{z}(X), \hat{z}(Y)) = \beta_0 + \beta_1\hat{z}(X) + \beta_2\hat{z}(Y) + \beta_3\hat{z}(X)\hat{z}(Y)$
 
 $\;$
 
@@ -270,7 +270,7 @@ end # let
 md"
 ---
 ###### 3.7.3 Linear Multiple OLS-Regression with 3-Parameters
-$f_2(\hat{z}(X), \hat{z}(Y)) = \beta_0 + \beta_1\hat{z}(X) + \beta_2\hat{z}(Y)$
+$E_2(\hat{z}(X), \hat{z}(Y)) = \beta_0 + \beta_1\hat{z}(X) + \beta_2\hat{z}(Y)$
 
 $\;$
 
@@ -329,7 +329,7 @@ end # let
 md"
 ---
 ###### 3.7.4 Linear Multiple OLS-Regression with 2-Parameters 
-$f_3(\hat{z}(X), \hat{z}(Y)) = \beta_0 + \beta_3\hat{z}(X)\hat{z}(Y)$
+$E_3(\hat{z}(X), \hat{z}(Y)) = \beta_0 + \beta_3\hat{z}(X)\hat{z}(Y)$
 
 $\;$
 
@@ -383,6 +383,11 @@ let
 	annotate!(22,140,20, "SSE = $sse ( = error sum of squares)", 10)
 	#--------------------------------------------------------------------------------
 end # let
+
+# ╔═╡ f28799e0-4221-4bf9-b048-d393e138f65f
+md"
+Further simplifications of models to linear-nonlinear univariate models are not necessary because intercepts $\beta_0$ become $0$ and regression cofficients $\beta_1$ or $\beta_2$ become $1.0$. Percentages of variance accounted are the same as in 3.2.3 ($88.4\%$) and in 3.3.3 ($40.8\%$).
+"
 
 # ╔═╡ cd71c970-252d-4a36-b56e-816459392339
 md"
@@ -2093,6 +2098,7 @@ version = "1.4.1+0"
 # ╟─ad053ad8-701b-409a-95b1-5dc8b0a1bffc
 # ╟─d19dcb44-b913-4285-9451-5cb155d8bb70
 # ╟─67c06dd8-eca9-4afe-996b-786f0aa48066
+# ╟─f28799e0-4221-4bf9-b048-d393e138f65f
 # ╟─cd71c970-252d-4a36-b56e-816459392339
 # ╟─4d3a4552-69d2-4117-ab4e-84a9dcf8e3f6
 # ╟─db9ebcc0-a894-4eab-9560-aa5a1b35f4da
