@@ -12,7 +12,7 @@ md"
 =====================================================================================
 #### ISLR2_2.1.1 What Is Statistical Learning ?
 ##### file: PCM20230424\_ISLR2\_2.1.1\_What\_Is\_Statistical\_Learning.jl
-##### Julia/Pluto (1.9.0/0.19.25) by PCM *** 2023/05/14 ***
+##### Julia/Pluto (1.9.0/0.19.25) by PCM *** 2023/05/15 ***
 =====================================================================================
 "
 
@@ -673,10 +673,42 @@ let
 	#--------------------------------------------------------------------------------
 end # let
 
+# ╔═╡ 01cc3ff4-e7a8-4610-b990-088eedbfcd9a
+md"
+---
+###### 3.6.2 Linear Multiple Regression $f(X)=\beta_0 + \beta_1X_1 + \beta_2 X_2 + \beta_3(X_1 \cdot X_2)$
+where $Y=Income, X_1=Education$, and $X_2=Seniority$ 
+
+This model has $4$ parameters $\beta_0, \beta_1, \beta_2, \beta_3$.
+
+"
+
+# ╔═╡ 347ae10c-0991-4cd7-b0d2-d87de4b43f17
+let
+	#--------------------------------------------------------------------------------
+	xs = income2DataFrame.Education
+	ys = income2DataFrame.Seniority
+	zs = income2DataFrame.Income
+	#--------------------------------------------------------------------------------
+	ols_lin = lm(@formula(Income ~ 1 + Education * Seniority), income2DataFrame)
+	zhat = predict(ols_lin)
+	multipleR   = round(cor(zs, zhat), digits=3)
+	multipleRsQ = round(multipleR^2, digits=3)
+	#--------------------------------------------------------------------------------
+	plot(title="Linear Multiple Regression: Income -> f(Education, Seniority, Education * Seniority) (ISLR2e, cf.Fig.2.3)", xlims=(10,20), ylims=(25,180), zlims=(0,100), windowsize=(600*2, 400*2))
+	plot!(map((x, y, z, zh) -> ([x, x], [y, y], [z, zh]), xs, ys, zs, zhat), label="", linewidth=3)
+	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(10,10))
+	plot!(xs, ys, zhat, seriestype=:surface, color=:viridis, legend=:none, colorbar=false, alpha=0.5)
+	#--------------------------------------------------------------------------------
+	annotate!(22,160,40, "multiple R = $multipleR")
+	annotate!(21.6,160,34, "multiple R^2 = $multipleRsQ")
+	#--------------------------------------------------------------------------------
+end # let
+
 # ╔═╡ 55f36e93-0c4e-4eaf-962e-e6ff7cf3e321
 md"
 ---
-###### 3.6.2 Linear Multiple OLS-Regression $f(X)=\beta_0 + \beta_1X_1 + \beta_2X_2$
+###### 3.6.3 Linear Multiple OLS-Regression $f(X)=\beta_0 + \beta_1X_1 + \beta_2X_2$
 where $Y=Income, X_1=Education$, and $X_2=Seniority$ 
 
 This model has $3$ parameters $\beta_0, \beta_1, \beta_2$.
@@ -707,7 +739,7 @@ end # let
 # ╔═╡ cf103b63-ee7e-4970-9f85-b6b9ae72e025
 md"
 ---
-###### 3.6.3 Linear Univariate Regression $f(X)=\beta_0 + \beta_1(X_1 \cdot X_2)$
+###### 3.6.4 Linear Univariate Regression $f(X)=\beta_0 + \beta_1(X_1 \cdot X_2)$
 where $Y=Income, X_1=Education$, and $X_2=Seniority$ 
 
 This model has $2$ parameters $\beta_0, \beta_1$.
@@ -735,38 +767,6 @@ let
 	#--------------------------------------------------------------------------------
 end # let
 
-# ╔═╡ 01cc3ff4-e7a8-4610-b990-088eedbfcd9a
-md"
----
-###### 3.6.4 Linear Multiple Regression $f(X)=\beta_0 + \beta_1X_1 + \beta_2 X_2 + \beta_3(X_1 \cdot X_2)$
-where $Y=Income, X_1=Education$, and $X_2=Seniority$ 
-
-This model has $4$ parameters $\beta_0, \beta_1, \beta_2, \beta_3$.
-
-"
-
-# ╔═╡ 347ae10c-0991-4cd7-b0d2-d87de4b43f17
-let
-	#--------------------------------------------------------------------------------
-	xs = income2DataFrame.Education
-	ys = income2DataFrame.Seniority
-	zs = income2DataFrame.Income
-	#--------------------------------------------------------------------------------
-	ols_lin = lm(@formula(Income ~ 1 + Education * Seniority), income2DataFrame)
-	zhat = predict(ols_lin)
-	multipleR   = round(cor(zs, zhat), digits=3)
-	multipleRsQ = round(multipleR^2, digits=3)
-	#--------------------------------------------------------------------------------
-	plot(title="Linear Multiple Regression: Income -> f(Education, Seniority, Education * Seniority) (ISLR2e, cf.Fig.2.3)", xlims=(10,20), ylims=(25,180), zlims=(0,100), windowsize=(600*2, 400*2))
-	plot!(map((x, y, z, zh) -> ([x, x], [y, y], [z, zh]), xs, ys, zs, zhat), label="", linewidth=3)
-	plot!(xs, ys, zs, seriestype=:scatter, label="(x,y,z)", xlabel = "Education", ylabel="Seniority", zlabel="Income", markersize=8, grid=true, gridstyle=:solid, gridlinewidth=5, camera=(10,10))
-	plot!(xs, ys, zhat, seriestype=:surface, color=:viridis, legend=:none, colorbar=false, alpha=0.5)
-	#--------------------------------------------------------------------------------
-	annotate!(22,160,40, "multiple R = $multipleR")
-	annotate!(21.6,160,34, "multiple R^2 = $multipleRsQ")
-	#--------------------------------------------------------------------------------
-end # let
-
 # ╔═╡ c94b50d3-2e18-4f61-921c-ad8d34b28185
 md"
 ---
@@ -779,9 +779,9 @@ The *full model* is the the 4-parameter model with interaction term. The other t
 # ╔═╡ b0ea196b-fd17-46b1-a480-9eb0c8dc605b
 md"
 ---
-###### 3.6.5.1 Full Model 3.6.4 vs Restricted Model 3.6.2: Significance of Interaction ?
+###### 3.6.5.1 Full Model 3.6.2 vs Restricted Model 3.6.3: Significance of Interaction ?
 
-The result of the F-Test full model 3.6.4 versus restricted model 3.6.2 demonstrates that we *may* drop the *interaction* term without loss of accounted variance.
+The result of the F-Test full model 3.6.2 versus restricted model 3.6.3 demonstrates that we *may* drop the *interaction* term without loss of accounted variance.
 
 "
 
@@ -792,19 +792,19 @@ let
 	ys = income2DataFrame.Seniority
 	zs = income2DataFrame.Income
 	#--------------------------------------------------------------------------------
-	ols_lin_3_6_4 = lm(@formula(Income ~ 1 + Education * Seniority), income2DataFrame)
-	ols_lin_3_6_2 = lm(@formula(Income ~ 1 + Education + Seniority), income2DataFrame)                        # no interaction term
+	ols_lin_3_6_2 = lm(@formula(Income ~ 1 + Education * Seniority), income2DataFrame)
+	ols_lin_3_6_3 = lm(@formula(Income ~ 1 + Education + Seniority), income2DataFrame)                        # no interaction term
 	#--------------------------------------------------------------------------------
-    ftest(ols_lin_3_6_4.model, ols_lin_3_6_2.model)
+    ftest(ols_lin_3_6_2.model, ols_lin_3_6_3.model)
 	#--------------------------------------------------------------------------------
 end # let
 
 # ╔═╡ 7260981e-2c46-4691-a07a-1aa8cc27d3dd
 md"
 ---
-###### 3.6.5.2 Full Model 3.6.4 vs Restricted Model 3.6.3: Significance of Main Effects ?
+###### 3.6.5.2 Full Model 3.6.2 vs Restricted Model 3.6.4: Significance of Main Effects ?
 
-The result of the F-Test full model 3.6.4 versus restricted model 3.6.3 demonstrates that we *cannot* drop the *interaction* term without loss of accounted variance.
+The result of the F-Test full model 3.6.2 versus restricted model 3.6.4 demonstrates that we may *not* drop the *main effects* without loss of accounted variance.
 
 "
 
@@ -815,10 +815,10 @@ let
 	ys = income2DataFrame.Seniority
 	zs = income2DataFrame.Income
 	#--------------------------------------------------------------------------------
-	ols_lin_3_6_4 = lm(@formula(Income ~ 1 + Education * Seniority), income2DataFrame)
-	ols_lin_3_6_3 = lm(@formula(Income ~ 1 + Education & Seniority), income2DataFrame)                        # no interaction term
+	ols_lin_3_6_2 = lm(@formula(Income ~ 1 + Education * Seniority), income2DataFrame)
+	ols_lin_3_6_4 = lm(@formula(Income ~ 1 + Education & Seniority), income2DataFrame)                        # no interaction term
 	#--------------------------------------------------------------------------------
-    ftest(ols_lin_3_6_4.model, ols_lin_3_6_3.model)
+    ftest(ols_lin_3_6_2.model, ols_lin_3_6_4.model)
 	#--------------------------------------------------------------------------------
 end # let
 
@@ -826,7 +826,7 @@ end # let
 md"
 ---
 ##### 3.7 Summary
-The highest accounted variance with a *linear* parameter-parsimoneous model is $93.4\% = R^2*100$. This achieved with the $3$ parameter model 3.6.3. 
+The highest accounted variance with a *linear* parameter-parsimoneous model is $93.4\% = R^2*100$. This achieved with the $3$ parameter model 3.6.3. This has *no* interaction term.
 "
 
 # ╔═╡ e13cda08-84ec-48c3-ade8-fd61a3c5ac17
@@ -2345,12 +2345,12 @@ version = "1.4.1+0"
 # ╟─4ea401b0-4604-4ab1-a5c4-cbdf4dc3195e
 # ╟─2db54260-2d77-40a1-834f-d6d0e4164e44
 # ╟─8beec881-7371-40dc-948d-deb61ad2d99f
+# ╟─01cc3ff4-e7a8-4610-b990-088eedbfcd9a
+# ╟─347ae10c-0991-4cd7-b0d2-d87de4b43f17
 # ╟─55f36e93-0c4e-4eaf-962e-e6ff7cf3e321
 # ╟─fcbbb2c6-55ca-4302-bd7c-638ba47ac9de
 # ╟─cf103b63-ee7e-4970-9f85-b6b9ae72e025
 # ╟─b276aaa9-ee61-444c-a4fa-c09f62f792b8
-# ╟─01cc3ff4-e7a8-4610-b990-088eedbfcd9a
-# ╟─347ae10c-0991-4cd7-b0d2-d87de4b43f17
 # ╟─c94b50d3-2e18-4f61-921c-ad8d34b28185
 # ╟─b0ea196b-fd17-46b1-a480-9eb0c8dc605b
 # ╟─2e43b039-725d-4e31-b169-a7029d96b19e
