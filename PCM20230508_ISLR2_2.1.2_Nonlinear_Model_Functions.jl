@@ -503,7 +503,7 @@ end # let
 # ╔═╡ 18ea4995-9f44-4057-b1b5-32752736fe21
 md"
 ---
-##### Discussion
+##### 3.9 Discussion
 We discuss the results under the two aspects *prediction precision* and *parameter stability*:
 
 - As the main result we achieved to *predict* the criteriums variable $Income$ to a very high degree though we did not know the underlying latent data generation process. The best model in this respect was *model 3.8.3* which was able to account $95.6%$ of criterium's variance. This model is a *two-step* model. In the *first* step we fitted *nonlinear univariate* OLS-regressions. In the *second* step we plugged in the nonlinear univariate model functions into the *linear multiple* OLS-regessions. The *first* two nonlinear univariate regressions needed $2 \cdot 4 = 8$ parameter and the *second* linear multiple regression had $3$ parameters. So the total two-step model implements $11$ parameters.
@@ -518,7 +518,7 @@ md"
 - **James, G., Witten, D., Hastie, T. & Tibshirani, R.**; *An Introduction to Statistical Learning, Heidelberg: Springer, 2021, 2/e, 
 - **Wikipedia**; *Logistic Function*; [https://en.wikipedia.org/wiki/Logistic_function](https://en.wikipedia.org/wiki/Logistic_function); last visit 2023/05/07
 - **Wikipedia**; *The Generalized Logistic Function*, [https://en.wikipedia.org/wiki/Generalised_logistic_function](https://en.wikipedia.org/wiki/Generalised_logistic_function); last visit 2023/05/04
-- **WolframAlpha**; Version 1.4.19.2022041167; last visit 23/05/04
+
 "
 
 # ╔═╡ bfa5c7d5-626d-4ed5-8584-29e78733b288
